@@ -26,6 +26,7 @@
         "vitest": "^0.28.4"
     },
     "dependencies": {
+        "daisyui": "^2.50.0",
         "solid-js": "^1.6.10"
     }
 }
