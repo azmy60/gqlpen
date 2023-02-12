@@ -1,4 +1,4 @@
-import { EditorView } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import {
     buildClientSchema,
     getIntrospectionQuery,
@@ -12,13 +12,26 @@ import {
 } from 'solid-codemirror';
 import { Icon } from 'solid-heroicons';
 import { arrowPath, cog_6Tooth } from 'solid-heroicons/solid';
-import { Component, createSignal, ParentComponent } from 'solid-js';
+import { Component, createSignal, onMount, ParentComponent } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
 import { graphql } from 'cm6-graphql';
-import { autocompletion } from '@codemirror/autocomplete';
+import {
+    autocompletion,
+    closeBrackets,
+    closeBracketsKeymap,
+    completionKeymap,
+} from '@codemirror/autocomplete';
 import { oneDark } from '@codemirror/theme-one-dark';
 import toast, { Toaster } from 'solid-toast';
+import { json } from '@codemirror/lang-json';
+import {
+    defaultKeymap,
+    history,
+    historyKeymap,
+    indentWithTab,
+} from '@codemirror/commands';
+import { bracketMatching, indentOnInput } from '@codemirror/language';
 
 const [appStore, setAppStore] = createStore<{
     endpoint: string;
@@ -60,9 +73,29 @@ async function queryFetcher(endpoint: string, query: string): Promise<any> {
     }).then((res) => res.json());
 }
 
+const [loadingQuery, setLoadingQuery] = createSignal(false);
+
+async function sendQuery() {
+    setLoadingQuery(true);
+    try {
+        const result = await queryFetcher(appStore.endpoint, appStore.query);
+        setAppStore('result', () => {});
+        setAppStore('result', result);
+    } catch (e) {
+        toast.error('Failed to fetch query', {
+            position: 'bottom-right',
+        });
+        console.error(e);
+    }
+    setLoadingQuery(false);
+}
+
 const TopBar: Component = () => {
-    const [loadingQuery, setLoadingQuery] = createSignal(false);
     const [loading, setLoading] = createSignal(false);
+
+    onMount(() => {
+        if (appStore.endpoint) handleLoadIntrospection();
+    });
 
     async function handleLoadIntrospection() {
         setLoading(true);
@@ -76,24 +109,6 @@ const TopBar: Component = () => {
             console.error(e);
         }
         setLoading(false);
-    }
-
-    async function handleSendQuery() {
-        setLoadingQuery(true);
-        try {
-            const result = await queryFetcher(
-                appStore.endpoint,
-                appStore.query
-            );
-            setAppStore('result', () => {});
-            setAppStore('result', result);
-        } catch (e) {
-            toast.error('Failed to fetch query', {
-                position: 'bottom-right',
-            });
-            console.error(e);
-        }
-        setLoadingQuery(false);
     }
 
     return (
@@ -144,7 +159,7 @@ const TopBar: Component = () => {
             </div>
             <button
                 type="button"
-                onClick={handleSendQuery}
+                onClick={sendQuery}
                 disabled={loadingQuery()}
                 class="btn-primary btn"
             >
@@ -166,7 +181,29 @@ const CodeEditor: Component = () => {
     createExtension(() =>
         appStore.schema ? graphql(appStore.schema) : undefined
     );
-    createExtension([autocompletion(), oneDark]);
+    createExtension([
+        autocompletion(),
+        oneDark,
+        indentOnInput(),
+        bracketMatching(),
+        closeBrackets(),
+        history(),
+        lineNumbers(),
+        keymap.of([
+            {
+                key: 'Ctrl-Enter',
+                run() {
+                    sendQuery();
+                    return true;
+                },
+            },
+            ...closeBracketsKeymap,
+            ...defaultKeymap,
+            ...historyKeymap,
+            ...completionKeymap,
+            indentWithTab,
+        ]),
+    ]);
 
     return <div ref={ref} class="h-full" />;
 };
@@ -184,6 +221,7 @@ const Preview: Component = () => {
             '&': { backgroundColor: 'black' },
         }),
         oneDark,
+        json(),
     ]);
 
     return <div ref={ref} class="h-full" />;
