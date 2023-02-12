@@ -1,6 +1,12 @@
+import { EditorView } from '@codemirror/view';
+import {
+    createCodeMirror,
+    createEditorControlledValue,
+    createEditorReadonly,
+} from 'solid-codemirror';
 import { Icon } from 'solid-heroicons';
 import { cog_6Tooth } from 'solid-heroicons/solid';
-import type { Component, ParentComponent } from 'solid-js';
+import { Component, createSignal, ParentComponent } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
 const TopBar: Component = () => {
@@ -37,12 +43,28 @@ const TopBar: Component = () => {
     );
 };
 
+const [query, setQuery] = createSignal('');
+const fullHeight = EditorView.theme({ '&': { height: '100%' } });
+
 const CodeEditor: Component = () => {
-    return 'CodeEditor';
+    const { ref, createExtension, editorView } = createCodeMirror({
+        onValueChange: setQuery,
+    });
+
+    createEditorControlledValue(editorView, query);
+    createExtension(fullHeight);
+
+    return <div ref={ref} class="h-full" />;
 };
 
 const Preview: Component = () => {
-    return 'Preview';
+    const { ref, createExtension, editorView } = createCodeMirror();
+
+    createEditorReadonly(editorView, () => true);
+    createEditorControlledValue(editorView, query);
+    createExtension(fullHeight);
+
+    return <div ref={ref} class="h-full" />;
 };
 
 const StatusBar: Component = () => {
@@ -123,7 +145,7 @@ export const App: Component = () => {
                     <div class="grow basis-0 bg-black">
                         <CodeEditor />
                     </div>
-                    <div class="grow basis-0 bg-white">
+                    <div class="grow basis-0 bg-red-700">
                         <Preview />
                     </div>
                 </div>

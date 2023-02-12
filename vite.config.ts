@@ -27,4 +27,7 @@ export default defineConfig({
     resolve: {
         conditions: ['development', 'browser'],
     },
+    optimizeDeps: {
+        include: ['@codemirror/state', '@codemirror/view'],
+    },
 });
