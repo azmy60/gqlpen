@@ -12,10 +12,17 @@ import {
 } from 'solid-codemirror';
 import { Icon } from 'solid-heroicons';
 import { arrowPath, cog_6Tooth } from 'solid-heroicons/solid';
-import { Component, createSignal, onMount, ParentComponent } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import {
+    Component,
+    createEffect,
+    createSignal,
+    For,
+    onMount,
+    ParentComponent,
+} from 'solid-js';
+import { createStore, unwrap } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
-import { graphql } from 'cm6-graphql';
+import { graphql, updateSchema } from 'cm6-graphql';
 import {
     autocompletion,
     closeBrackets,
@@ -38,21 +45,27 @@ const [appStore, setAppStore] = createStore<{
     query: string;
     schema: GraphQLSchema | null;
     result: any;
+    introspectionHeaders: { key: string; value: string }[];
+    queryHeaders: { key: string; value: string }[];
 }>({
     endpoint: 'https://graphql.anilist.co/',
     query: '',
     schema: null,
     result: null,
+    introspectionHeaders: [{ key: '', value: '' }],
+    queryHeaders: [{ key: '', value: '' }],
 });
 
 async function introspectionFetcher(
-    endpoint: string
+    endpoint: string,
+    headers?: Record<string, string>
 ): Promise<IntrospectionQuery> {
     return fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            ...headers,
         },
         body: JSON.stringify({
             query: getIntrospectionQuery(),
@@ -62,12 +75,29 @@ async function introspectionFetcher(
         .then((data) => data.data);
 }
 
-async function queryFetcher(endpoint: string, query: string): Promise<any> {
+function transformHeadersArrayToObject(
+    headers: { key: string; value: string }[]
+): Record<string, string> {
+    return headers.reduce(
+        (acc, curr) => ({
+            ...acc,
+            ...(curr.key && { [curr.key]: curr.value }),
+        }),
+        {}
+    );
+}
+
+async function queryFetcher(
+    endpoint: string,
+    query: string,
+    headers?: Record<string, string>
+): Promise<any> {
     return fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            ...headers,
         },
         body: JSON.stringify({ query }),
     }).then((res) => res.json());
@@ -78,7 +108,11 @@ const [loadingQuery, setLoadingQuery] = createSignal(false);
 async function sendQuery() {
     setLoadingQuery(true);
     try {
-        const result = await queryFetcher(appStore.endpoint, appStore.query);
+        const result = await queryFetcher(
+            appStore.endpoint,
+            appStore.query,
+            transformHeadersArrayToObject(unwrap(appStore.queryHeaders))
+        );
         setAppStore('result', () => {});
         setAppStore('result', result);
     } catch (e) {
@@ -100,7 +134,12 @@ const TopBar: Component = () => {
     async function handleLoadIntrospection() {
         setLoading(true);
         try {
-            const introspection = await introspectionFetcher(appStore.endpoint);
+            const introspection = await introspectionFetcher(
+                appStore.endpoint,
+                transformHeadersArrayToObject(
+                    unwrap(appStore.introspectionHeaders)
+                )
+            );
             setAppStore('schema', buildClientSchema(introspection));
         } catch (e) {
             toast.error('Failed to load schema', {
@@ -177,11 +216,9 @@ const CodeEditor: Component = () => {
     });
 
     createEditorControlledValue(editorView, () => appStore.query);
-    createExtension(fullHeight);
-    createExtension(() =>
-        appStore.schema ? graphql(appStore.schema) : undefined
-    );
     createExtension([
+        fullHeight,
+        graphql(),
         autocompletion(),
         oneDark,
         indentOnInput(),
@@ -204,6 +241,10 @@ const CodeEditor: Component = () => {
             indentWithTab,
         ]),
     ]);
+
+    createEffect(() => {
+        if (appStore.schema) updateSchema(editorView(), appStore.schema);
+    });
 
     return <div ref={ref} class="h-full" />;
 };
@@ -258,30 +299,82 @@ const HeaderSettingsModal: Component = () => {
                     <div class="flex flex-col gap-6">
                         <div class="flex flex-col gap-2">
                             <h4 class="font-bold">Introspection Headers</h4>
-                            <div class="flex gap-2">
-                                <input
-                                    type="text"
-                                    class="input-bordered input input-sm grow"
-                                />
-                                <input
-                                    type="text"
-                                    class="input-bordered input input-sm grow"
-                                />
-                            </div>
+                            <For each={appStore.introspectionHeaders}>
+                                {({ key, value }, i) => (
+                                    <div class="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) =>
+                                                setAppStore(
+                                                    'introspectionHeaders',
+                                                    i(),
+                                                    'key',
+                                                    (
+                                                        e.target as HTMLInputElement
+                                                    ).value
+                                                )
+                                            }
+                                            class="input-bordered input input-sm grow"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) =>
+                                                setAppStore(
+                                                    'introspectionHeaders',
+                                                    i(),
+                                                    'value',
+                                                    (
+                                                        e.target as HTMLInputElement
+                                                    ).value
+                                                )
+                                            }
+                                            class="input-bordered input input-sm grow"
+                                        />
+                                    </div>
+                                )}
+                            </For>
                         </div>
 
                         <div class="flex flex-col gap-2">
                             <h4 class="font-bold">Query Headers</h4>
-                            <div class="flex gap-2">
-                                <input
-                                    type="text"
-                                    class="input-bordered input input-sm grow"
-                                />
-                                <input
-                                    type="text"
-                                    class="input-bordered input input-sm grow"
-                                />
-                            </div>
+                            <For each={appStore.queryHeaders}>
+                                {({ key, value }, i) => (
+                                    <div class="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={key}
+                                            onChange={(e) =>
+                                                setAppStore(
+                                                    'queryHeaders',
+                                                    i(),
+                                                    'key',
+                                                    (
+                                                        e.target as HTMLInputElement
+                                                    ).value
+                                                )
+                                            }
+                                            class="input-bordered input input-sm grow"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) =>
+                                                setAppStore(
+                                                    'queryHeaders',
+                                                    i(),
+                                                    'value',
+                                                    (
+                                                        e.target as HTMLInputElement
+                                                    ).value
+                                                )
+                                            }
+                                            class="input-bordered input input-sm grow"
+                                        />
+                                    </div>
+                                )}
+                            </For>
                         </div>
                     </div>
 
