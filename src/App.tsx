@@ -22,10 +22,14 @@ import toast, { Toaster } from 'solid-toast';
 
 const [appStore, setAppStore] = createStore<{
     endpoint: string;
+    query: string;
     schema: GraphQLSchema | null;
+    result: any;
 }>({
     endpoint: 'https://graphql.anilist.co/',
+    query: '',
     schema: null,
+    result: null,
 });
 
 async function introspectionFetcher(
@@ -45,7 +49,19 @@ async function introspectionFetcher(
         .then((data) => data.data);
 }
 
+async function queryFetcher(endpoint: string, query: string): Promise<any> {
+    return fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        },
+        body: JSON.stringify({ query }),
+    }).then((res) => res.json());
+}
+
 const TopBar: Component = () => {
+    const [loadingQuery, setLoadingQuery] = createSignal(false);
     const [loading, setLoading] = createSignal(false);
 
     async function handleLoadIntrospection() {
@@ -60,6 +76,24 @@ const TopBar: Component = () => {
             console.error(e);
         }
         setLoading(false);
+    }
+
+    async function handleSendQuery() {
+        setLoadingQuery(true);
+        try {
+            const result = await queryFetcher(
+                appStore.endpoint,
+                appStore.query
+            );
+            setAppStore('result', () => {});
+            setAppStore('result', result);
+        } catch (e) {
+            toast.error('Failed to fetch query', {
+                position: 'bottom-right',
+            });
+            console.error(e);
+        }
+        setLoadingQuery(false);
     }
 
     return (
@@ -108,22 +142,26 @@ const TopBar: Component = () => {
                     </button>
                 )}
             </div>
-            <button type="button" class="btn-primary btn">
+            <button
+                type="button"
+                onClick={handleSendQuery}
+                disabled={loadingQuery()}
+                class="btn-primary btn"
+            >
                 Send
             </button>
         </div>
     );
 };
 
-const [query, setQuery] = createSignal('');
 const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 
 const CodeEditor: Component = () => {
     const { ref, createExtension, editorView } = createCodeMirror({
-        onValueChange: setQuery,
+        onValueChange: (value) => setAppStore('query', value),
     });
 
-    createEditorControlledValue(editorView, query);
+    createEditorControlledValue(editorView, () => appStore.query);
     createExtension(fullHeight);
     createExtension(() =>
         appStore.schema ? graphql(appStore.schema) : undefined
@@ -137,7 +175,9 @@ const Preview: Component = () => {
     const { ref, createExtension, editorView } = createCodeMirror();
 
     createEditorReadonly(editorView, () => true);
-    createEditorControlledValue(editorView, query);
+    createEditorControlledValue(editorView, () =>
+        JSON.stringify(appStore.result, null, 2)
+    );
     createExtension([
         fullHeight,
         EditorView.theme({
