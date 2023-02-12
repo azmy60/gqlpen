@@ -30,4 +30,5 @@ export default defineConfig({
     optimizeDeps: {
         include: ['@codemirror/state', '@codemirror/view'],
     },
+    base: process.env.NODE_ENV === 'production' ? '/gqlpen/' : '/',
 });
