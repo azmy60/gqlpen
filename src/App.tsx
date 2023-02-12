@@ -5,16 +5,16 @@ import { Portal } from 'solid-js/web';
 
 const TopBar: Component = () => {
     return (
-        <div class="flex gap-2 m-2">
+        <div class="m-2 flex gap-2">
             <div class="relative grow">
-                <input type="text" class="input input-bordered w-full" />
+                <input type="text" class="input-bordered input w-full" />
                 <div
                     role="status"
                     class="absolute right-2 top-1/2 -translate-y-1/2"
                 >
                     <svg
                         aria-hidden="true"
-                        class="inline w-6 h-6 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                        class="mr-2 inline h-6 w-6 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                         viewBox="0 0 100 101"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -30,7 +30,7 @@ const TopBar: Component = () => {
                     </svg>
                 </div>
             </div>
-            <button type="button" class="btn btn-primary">
+            <button type="button" class="btn-primary btn">
                 Send
             </button>
         </div>
@@ -47,11 +47,11 @@ const Preview: Component = () => {
 
 const StatusBar: Component = () => {
     return (
-        <div class="flex bg-neutral h-6 items-stretch px-1">
+        <div class="flex h-6 items-stretch bg-neutral px-1">
             <div class="grow"></div>
             <StatusBarButton>
                 <label for="my-modal">
-                    <Icon path={cog_6Tooth} class="w-4 h-4" />
+                    <Icon path={cog_6Tooth} class="h-4 w-4" />
                 </label>
             </StatusBarButton>
             <HeaderSettingsModal />
@@ -61,7 +61,7 @@ const StatusBar: Component = () => {
 
 const StatusBarButton: ParentComponent = ({ children }) => {
     return (
-        <div class="flex items-center cursor-pointer px-1 hover:bg-neutral-800">
+        <div class="flex cursor-pointer items-center px-1 hover:bg-neutral-800">
             {children}
         </div>
     );
@@ -79,11 +79,11 @@ const HeaderSettingsModal: Component = () => {
                             <div class="flex gap-2">
                                 <input
                                     type="text"
-                                    class="grow input input-bordered input-sm"
+                                    class="input-bordered input input-sm grow"
                                 />
                                 <input
                                     type="text"
-                                    class="grow input input-bordered input-sm"
+                                    class="input-bordered input input-sm grow"
                                 />
                             </div>
                         </div>
@@ -93,11 +93,11 @@ const HeaderSettingsModal: Component = () => {
                             <div class="flex gap-2">
                                 <input
                                     type="text"
-                                    class="grow input input-bordered input-sm"
+                                    class="input-bordered input input-sm grow"
                                 />
                                 <input
                                     type="text"
-                                    class="grow input input-bordered input-sm"
+                                    class="input-bordered input input-sm grow"
                                 />
                             </div>
                         </div>
@@ -117,9 +117,9 @@ const HeaderSettingsModal: Component = () => {
 export const App: Component = () => {
     return (
         <>
-            <main class="flex flex-col h-screen">
+            <main class="flex h-screen flex-col">
                 <TopBar />
-                <div class="flex flex-col grow md:flex-row">
+                <div class="flex grow flex-col md:flex-row">
                     <div class="grow basis-0 bg-black">
                         <CodeEditor />
                     </div>
