@@ -1,43 +1,13 @@
-import { EditorView, keymap, lineNumbers } from '@codemirror/view';
-import {
-    buildClientSchema,
-    getIntrospectionQuery,
-} from 'graphql';
+import { buildClientSchema, getIntrospectionQuery } from 'graphql';
 import type { IntrospectionQuery } from 'graphql';
-import {
-    createCodeMirror,
-    createEditorControlledValue,
-    createEditorReadonly,
-} from 'solid-codemirror';
 import { Icon } from 'solid-heroicons';
 import { arrowPath, cog_6Tooth } from 'solid-heroicons/solid';
-import {
-    Component,
-    createEffect,
-    createSignal,
-    onMount,
-    ParentComponent,
-} from 'solid-js';
+import { Component, createSignal, onMount, ParentComponent } from 'solid-js';
 import { unwrap } from 'solid-js/store';
-import { graphql, updateSchema } from 'cm6-graphql';
-import {
-    autocompletion,
-    closeBrackets,
-    closeBracketsKeymap,
-    completionKeymap,
-} from '@codemirror/autocomplete';
-import { oneDark } from '@codemirror/theme-one-dark';
 import toast, { Toaster } from 'solid-toast';
-import { json } from '@codemirror/lang-json';
-import {
-    defaultKeymap,
-    history,
-    historyKeymap,
-    indentWithTab,
-} from '@codemirror/commands';
-import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { appStore, setAppStore } from './state';
 import HeaderSettingsModal from './HeaderSettingsModal';
+import { CodeEditor, Preview } from './CodeEditor';
 
 async function introspectionFetcher(
     endpoint: string,
@@ -191,66 +161,6 @@ const TopBar: Component = () => {
     );
 };
 
-const fullHeight = EditorView.theme({ '&': { height: '100%' } });
-
-const CodeEditor: Component = () => {
-    const { ref, createExtension, editorView } = createCodeMirror({
-        onValueChange: (value) => setAppStore('query', value),
-    });
-
-    createEditorControlledValue(editorView, () => appStore.query);
-    createExtension([
-        fullHeight,
-        graphql(),
-        autocompletion(),
-        oneDark,
-        indentOnInput(),
-        bracketMatching(),
-        closeBrackets(),
-        history(),
-        lineNumbers(),
-        keymap.of([
-            {
-                key: 'Ctrl-Enter',
-                run() {
-                    sendQuery();
-                    return true;
-                },
-            },
-            ...closeBracketsKeymap,
-            ...defaultKeymap,
-            ...historyKeymap,
-            ...completionKeymap,
-            indentWithTab,
-        ]),
-    ]);
-
-    createEffect(() => {
-        if (appStore.schema) updateSchema(editorView(), appStore.schema);
-    });
-
-    return <div ref={ref} class="h-full" />;
-};
-
-const Preview: Component = () => {
-    const { ref, createExtension, editorView } = createCodeMirror();
-
-    createEditorReadonly(editorView, () => true);
-    createEditorControlledValue(editorView, () =>
-        JSON.stringify(appStore.result, null, 2)
-    );
-    createExtension([
-        fullHeight,
-        EditorView.theme({
-            '&': { backgroundColor: 'black' },
-        }),
-        oneDark,
-        json(),
-    ]);
-
-    return <div ref={ref} class="h-full" />;
-};
-
 const StatusBar: Component = () => {
     return (
         <div class="flex h-6 items-stretch bg-neutral px-1">
@@ -280,7 +190,7 @@ export const App: Component = () => {
                 <TopBar />
                 <div class="flex grow flex-col md:flex-row">
                     <div class="grow basis-0">
-                        <CodeEditor />
+                        <CodeEditor onCtrlEnter={sendQuery} />
                     </div>
                     <div class="bg-neutral-900 py-0.5" />
                     <div class="grow basis-0">
