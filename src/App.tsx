@@ -2,7 +2,6 @@ import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import {
     buildClientSchema,
     getIntrospectionQuery,
-    GraphQLSchema,
 } from 'graphql';
 import type { IntrospectionQuery } from 'graphql';
 import {
@@ -16,12 +15,10 @@ import {
     Component,
     createEffect,
     createSignal,
-    For,
     onMount,
     ParentComponent,
 } from 'solid-js';
-import { createStore, unwrap } from 'solid-js/store';
-import { Portal } from 'solid-js/web';
+import { unwrap } from 'solid-js/store';
 import { graphql, updateSchema } from 'cm6-graphql';
 import {
     autocompletion,
@@ -39,22 +36,8 @@ import {
     indentWithTab,
 } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
-
-const [appStore, setAppStore] = createStore<{
-    endpoint: string;
-    query: string;
-    schema: GraphQLSchema | null;
-    result: any;
-    introspectionHeaders: { key: string; value: string }[];
-    queryHeaders: { key: string; value: string }[];
-}>({
-    endpoint: 'https://graphql.anilist.co/',
-    query: '',
-    schema: null,
-    result: null,
-    introspectionHeaders: [{ key: '', value: '' }],
-    queryHeaders: [{ key: '', value: '' }],
-});
+import { appStore, setAppStore } from './state';
+import HeaderSettingsModal from './HeaderSettingsModal';
 
 async function introspectionFetcher(
     endpoint: string,
@@ -287,105 +270,6 @@ const StatusBarButton: ParentComponent = ({ children }) => {
         <div class="flex cursor-pointer items-center px-1 hover:bg-neutral-800">
             {children}
         </div>
-    );
-};
-
-const HeaderSettingsModal: Component = () => {
-    return (
-        <Portal>
-            <input type="checkbox" id="my-modal" class="modal-toggle" />
-            <label for="my-modal" class="modal cursor-pointer">
-                <div class="modal-box">
-                    <div class="flex flex-col gap-6">
-                        <div class="flex flex-col gap-2">
-                            <h4 class="font-bold">Introspection Headers</h4>
-                            <For each={appStore.introspectionHeaders}>
-                                {({ key, value }, i) => (
-                                    <div class="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={key}
-                                            onChange={(e) =>
-                                                setAppStore(
-                                                    'introspectionHeaders',
-                                                    i(),
-                                                    'key',
-                                                    (
-                                                        e.target as HTMLInputElement
-                                                    ).value
-                                                )
-                                            }
-                                            class="input-bordered input input-sm grow"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={value}
-                                            onChange={(e) =>
-                                                setAppStore(
-                                                    'introspectionHeaders',
-                                                    i(),
-                                                    'value',
-                                                    (
-                                                        e.target as HTMLInputElement
-                                                    ).value
-                                                )
-                                            }
-                                            class="input-bordered input input-sm grow"
-                                        />
-                                    </div>
-                                )}
-                            </For>
-                        </div>
-
-                        <div class="flex flex-col gap-2">
-                            <h4 class="font-bold">Query Headers</h4>
-                            <For each={appStore.queryHeaders}>
-                                {({ key, value }, i) => (
-                                    <div class="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={key}
-                                            onChange={(e) =>
-                                                setAppStore(
-                                                    'queryHeaders',
-                                                    i(),
-                                                    'key',
-                                                    (
-                                                        e.target as HTMLInputElement
-                                                    ).value
-                                                )
-                                            }
-                                            class="input-bordered input input-sm grow"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={value}
-                                            onChange={(e) =>
-                                                setAppStore(
-                                                    'queryHeaders',
-                                                    i(),
-                                                    'value',
-                                                    (
-                                                        e.target as HTMLInputElement
-                                                    ).value
-                                                )
-                                            }
-                                            class="input-bordered input input-sm grow"
-                                        />
-                                    </div>
-                                )}
-                            </For>
-                        </div>
-                    </div>
-
-                    <div class="modal-action">
-                        <label for="my-modal" class="btn">
-                            Close
-                        </label>
-                    </div>
-                </div>
-            </label>
-        </Portal>
     );
 };
 
