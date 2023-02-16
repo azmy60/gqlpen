@@ -1,6 +1,6 @@
 import { Component, For } from 'solid-js';
 import { Portal } from 'solid-js/web';
-import { appStore, setAppStore } from './state';
+import { globalStore, setGlobalStore } from './state';
 
 const HeaderSettingsModal: Component = () => {
     return (
@@ -11,14 +11,14 @@ const HeaderSettingsModal: Component = () => {
                     <div class="flex flex-col gap-6">
                         <div class="flex flex-col gap-2">
                             <h4 class="font-bold">Introspection Headers</h4>
-                            <For each={appStore.introspectionHeaders}>
+                            <For each={globalStore.introspectionHeaders}>
                                 {({ key, value }, i) => (
                                     <div class="flex gap-2">
                                         <input
                                             type="text"
                                             value={key}
                                             onChange={(e) =>
-                                                setAppStore(
+                                                setGlobalStore(
                                                     'introspectionHeaders',
                                                     i(),
                                                     'key',
@@ -33,7 +33,7 @@ const HeaderSettingsModal: Component = () => {
                                             type="text"
                                             value={value}
                                             onChange={(e) =>
-                                                setAppStore(
+                                                setGlobalStore(
                                                     'introspectionHeaders',
                                                     i(),
                                                     'value',
@@ -51,14 +51,14 @@ const HeaderSettingsModal: Component = () => {
 
                         <div class="flex flex-col gap-2">
                             <h4 class="font-bold">Query Headers</h4>
-                            <For each={appStore.queryHeaders}>
+                            <For each={globalStore.queryHeaders}>
                                 {({ key, value }, i) => (
                                     <div class="flex gap-2">
                                         <input
                                             type="text"
                                             value={key}
                                             onChange={(e) =>
-                                                setAppStore(
+                                                setGlobalStore(
                                                     'queryHeaders',
                                                     i(),
                                                     'key',
@@ -73,7 +73,7 @@ const HeaderSettingsModal: Component = () => {
                                             type="text"
                                             value={value}
                                             onChange={(e) =>
-                                                setAppStore(
+                                                setGlobalStore(
                                                     'queryHeaders',
                                                     i(),
                                                     'value',

@@ -14,7 +14,7 @@ import {
     createEditorReadonly,
 } from 'solid-codemirror';
 import { Component, createEffect } from 'solid-js';
-import { appStore, setAppStore } from './state';
+import { globalStore, setGlobalStore } from './state';
 import {
     defaultKeymap,
     history,
@@ -29,10 +29,10 @@ export const CodeEditor: Component<{
     onCtrlEnter: () => void;
 }> = ({ onCtrlEnter }) => {
     const { ref, createExtension, editorView } = createCodeMirror({
-        onValueChange: (value) => setAppStore('query', value),
+        onValueChange: (value) => setGlobalStore('query', value),
     });
 
-    createEditorControlledValue(editorView, () => appStore.query);
+    createEditorControlledValue(editorView, () => globalStore.query);
     createExtension([
         fullHeight,
         graphql(),
@@ -60,7 +60,9 @@ export const CodeEditor: Component<{
     ]);
 
     createEffect(() => {
-        if (appStore.schema) updateSchema(editorView(), appStore.schema);
+        if (globalStore.schema && editorView()) {
+            updateSchema(editorView(), globalStore.schema);
+        }
     });
 
     return <div ref={ref} class="h-full" />;
@@ -71,7 +73,7 @@ export const Preview: Component = () => {
 
     createEditorReadonly(editorView, () => true);
     createEditorControlledValue(editorView, () =>
-        JSON.stringify(appStore.result, null, 2)
+        JSON.stringify(globalStore.result, null, 2)
     );
     createExtension([
         fullHeight,

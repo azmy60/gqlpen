@@ -2,10 +2,16 @@ import { buildClientSchema, getIntrospectionQuery } from 'graphql';
 import type { IntrospectionQuery } from 'graphql';
 import { Icon } from 'solid-heroicons';
 import { arrowPath, cog_6Tooth } from 'solid-heroicons/solid';
-import { Component, createSignal, onMount, ParentComponent } from 'solid-js';
+import {
+    Component,
+    createSignal,
+    onCleanup,
+    onMount,
+    ParentComponent,
+} from 'solid-js';
 import { unwrap } from 'solid-js/store';
 import toast, { Toaster } from 'solid-toast';
-import { appStore, setAppStore } from './state';
+import { getIsStoreDirty, globalStore, save, setGlobalStore } from './state';
 import HeaderSettingsModal from './HeaderSettingsModal';
 import { CodeEditor, Preview } from './CodeEditor';
 
@@ -62,16 +68,14 @@ async function sendQuery() {
     setLoadingQuery(true);
     try {
         const result = await queryFetcher(
-            appStore.endpoint,
-            appStore.query,
-            transformHeadersArrayToObject(unwrap(appStore.queryHeaders))
+            globalStore.endpoint,
+            globalStore.query,
+            transformHeadersArrayToObject(unwrap(globalStore.queryHeaders))
         );
-        setAppStore('result', () => {});
-        setAppStore('result', result);
+        setGlobalStore('result', () => {});
+        setGlobalStore('result', result);
     } catch (e) {
-        toast.error('Failed to fetch query', {
-            position: 'bottom-right',
-        });
+        toast.error('Failed to fetch query');
         console.error(e);
     }
     setLoadingQuery(false);
@@ -81,23 +85,22 @@ const TopBar: Component = () => {
     const [loading, setLoading] = createSignal(false);
 
     onMount(() => {
-        if (appStore.endpoint) handleLoadIntrospection();
+        if (globalStore.endpoint && !globalStore.schema)
+            handleLoadIntrospection();
     });
 
     async function handleLoadIntrospection() {
         setLoading(true);
         try {
-            const introspection = await introspectionFetcher(
-                appStore.endpoint,
+            const introspectionQuery = await introspectionFetcher(
+                globalStore.endpoint,
                 transformHeadersArrayToObject(
-                    unwrap(appStore.introspectionHeaders)
+                    unwrap(globalStore.introspectionHeaders)
                 )
             );
-            setAppStore('schema', buildClientSchema(introspection));
+            setGlobalStore('schema', buildClientSchema(introspectionQuery));
         } catch (e) {
-            toast.error('Failed to load schema', {
-                position: 'bottom-right',
-            });
+            toast.error('Failed to load schema');
             console.error(e);
         }
         setLoading(false);
@@ -108,9 +111,9 @@ const TopBar: Component = () => {
             <div class="relative grow">
                 <input
                     type="text"
-                    value={appStore.endpoint}
+                    value={globalStore.endpoint}
                     onInput={(e) =>
-                        setAppStore(
+                        setGlobalStore(
                             'endpoint',
                             (e.target as HTMLInputElement).value
                         )
@@ -184,6 +187,31 @@ const StatusBarButton: ParentComponent = ({ children }) => {
 };
 
 export const App: Component = () => {
+    function handleDocumentCtrlS(event: KeyboardEvent) {
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault();
+            save();
+            toast.success('Saved!');
+        }
+    }
+
+    function confirmExit(event: BeforeUnloadEvent) {
+        if (getIsStoreDirty()) {
+            event.preventDefault();
+            return (event.returnValue = '');
+        }
+    }
+
+    onMount(() => {
+        document.addEventListener('keydown', handleDocumentCtrlS);
+        window.addEventListener('beforeunload', confirmExit);
+    });
+
+    onCleanup(() => {
+        document.removeEventListener('keydown', handleDocumentCtrlS);
+        window.removeEventListener('beforeunload', confirmExit);
+    });
+
     return (
         <>
             <main class="flex h-screen flex-col">
@@ -200,6 +228,7 @@ export const App: Component = () => {
                 <StatusBar />
             </main>
             <Toaster
+                position="bottom-right"
                 containerStyle={{
                     'margin-bottom': '1rem',
                 }}
