@@ -1,10 +1,11 @@
-import { GraphQLSchema } from 'graphql';
+import type { GraphQLSchema, IntrospectionQuery } from 'graphql';
 import { createStore } from 'solid-js/store';
 
 interface GlobalStore {
     endpoint: string;
     query: string;
     schema: GraphQLSchema | null;
+    introspection: IntrospectionQuery | null;
     result: any;
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
@@ -18,6 +19,7 @@ function getSavedGlobalStore(): GlobalStore {
             endpoint: 'https://graphql-pokemon2.vercel.app',
             query: '',
             schema: null,
+            introspection: null,
             result: {},
             introspectionHeaders: [{ key: '', value: '' }],
             queryHeaders: [{ key: '', value: '' }],

@@ -22,6 +22,7 @@ import {
     indentWithTab,
 } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
+import { buildClientSchema } from 'graphql';
 
 const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 
@@ -60,8 +61,8 @@ export const CodeEditor: Component<{
     ]);
 
     createEffect(() => {
-        if (globalStore.schema && editorView()) {
-            updateSchema(editorView(), globalStore.schema);
+        if (globalStore.introspection && editorView()) {
+            updateSchema(editorView(), buildClientSchema(globalStore.introspection));
         }
     });
 

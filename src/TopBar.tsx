@@ -1,17 +1,16 @@
-import type { IntrospectionQuery } from "graphql";
-import { buildClientSchema, getIntrospectionQuery} from "graphql";
-import { Icon } from "solid-heroicons";
-import { arrowPath } from "solid-heroicons/solid";
-import { Component, createSignal, onMount } from "solid-js";
-import { unwrap } from "solid-js/store";
-import toast from "solid-toast";
-import { globalStore, setGlobalStore } from "./state";
+import { getIntrospectionQuery } from 'graphql';
+import { Icon } from 'solid-heroicons';
+import { arrowPath } from 'solid-heroicons/solid';
+import { Component, createSignal, onMount } from 'solid-js';
+import { unwrap } from 'solid-js/store';
+import toast from 'solid-toast';
+import { globalStore, setGlobalStore } from './state';
 
-async function introspectionFetcher(
+async function updateGlobalIntrospection(
     endpoint: string,
     headers?: Record<string, string>
-): Promise<IntrospectionQuery> {
-    return fetch(endpoint, {
+) {
+    const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -21,9 +20,9 @@ async function introspectionFetcher(
         body: JSON.stringify({
             query: getIntrospectionQuery(),
         }),
-    })
-        .then((res) => res.json())
-        .then((data) => data.data);
+    });
+    const introspection = (await res.json()).data;
+    setGlobalStore('introspection', introspection);
 }
 
 function transformHeadersArrayToObject(
@@ -77,20 +76,17 @@ const TopBar: Component = () => {
     const [loading, setLoading] = createSignal(false);
 
     onMount(() => {
-        if (globalStore.endpoint && !globalStore.schema)
-            handleLoadIntrospection();
+        if (globalStore.endpoint && !globalStore.introspection)
+            loadIntrospection();
     });
 
-    async function handleLoadIntrospection() {
+    async function loadIntrospection() {
         setLoading(true);
         try {
-            const introspectionQuery = await introspectionFetcher(
-                globalStore.endpoint,
-                transformHeadersArrayToObject(
-                    unwrap(globalStore.introspectionHeaders)
-                )
+            const headers = transformHeadersArrayToObject(
+                globalStore.introspectionHeaders
             );
-            setGlobalStore('schema', buildClientSchema(introspectionQuery));
+            await updateGlobalIntrospection(globalStore.endpoint, headers);
         } catch (e) {
             toast.error('Failed to load schema');
             console.error(e);
@@ -137,7 +133,7 @@ const TopBar: Component = () => {
                 ) : (
                     <button
                         type="button"
-                        onClick={handleLoadIntrospection}
+                        onClick={loadIntrospection}
                         class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1"
                     >
                         <Icon path={arrowPath} class="h-6 w-6" />
