@@ -11,7 +11,7 @@ export const HeaderSettingsModalButton: ParentComponent = ({ children }) => (
 export const HeaderSettingsModal: Component = () => {
     return (
         <Portal>
-            <input type="checkbox" id="my-modal" class="modal-toggle" />
+            <input type="checkbox" id={MODAL_ID} class="modal-toggle" />
             <label for={MODAL_ID} class="modal cursor-pointer">
                 <div class="modal-box">
                     <div class="flex flex-col gap-6">
@@ -97,7 +97,7 @@ export const HeaderSettingsModal: Component = () => {
                     </div>
 
                     <div class="modal-action">
-                        <label for="my-modal" class="btn">
+                        <label for={MODAL_ID} class="btn">
                             Close
                         </label>
                     </div>
