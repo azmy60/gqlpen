@@ -1,12 +1,18 @@
-import { Component, For } from 'solid-js';
+import { Component, For, ParentComponent } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { globalStore, setGlobalStore } from './state';
 
-const HeaderSettingsModal: Component = () => {
+const MODAL_ID = 'header-settings-modal';
+
+export const HeaderSettingsModalButton: ParentComponent = ({ children }) => (
+    <label for={MODAL_ID}>{children}</label>
+);
+
+export const HeaderSettingsModal: Component = () => {
     return (
         <Portal>
             <input type="checkbox" id="my-modal" class="modal-toggle" />
-            <label for="my-modal" class="modal cursor-pointer">
+            <label for={MODAL_ID} class="modal cursor-pointer">
                 <div class="modal-box">
                     <div class="flex flex-col gap-6">
                         <div class="flex flex-col gap-2">
@@ -100,5 +106,3 @@ const HeaderSettingsModal: Component = () => {
         </Portal>
     );
 };
-
-export default HeaderSettingsModal;
