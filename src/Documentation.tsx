@@ -1,45 +1,107 @@
-import type { GraphQLSchema, GraphQLObjectType, GraphQLField } from 'graphql';
-import { Component, For } from 'solid-js';
+import {
+    GraphQLSchema,
+    GraphQLObjectType,
+    GraphQLField,
+    GraphQLInputType,
+    GraphQLOutputType,
+    GraphQLScalarType,
+    GraphQLList,
+    isInputObjectType,
+    GraphQLInputObjectType,
+} from 'graphql';
+import {
+    isType,
+    isObjectType,
+    isScalarType,
+    isListType,
+    isNonNullType,
+} from 'graphql';
+import { Component, For, Match, Switch } from 'solid-js';
 import { Icon } from 'solid-heroicons';
 import { arrowLeft } from 'solid-heroicons/solid';
 import { createContext, useContext } from 'solid-js';
-import { createSignal, Show } from 'solid-js';
+import { Show } from 'solid-js';
+import { createStore, produce } from 'solid-js/store';
 import { extractFields } from './graphql';
 
-type Page = 'main' | 'query' | 'mutation';
+type GQLType = GraphQLInputType | GraphQLOutputType;
+type GQLField = GraphQLField<any, any>;
+type GQLList = GraphQLList<any>;
 
-const Context = createContext<{ schema: GraphQLSchema | null }>({
+const Context = createContext<{
+    schema: GraphQLSchema | null;
+    goTo: (type: GQLType | GQLField) => void;
+    goBack: () => void;
+}>({
     schema: null,
+    goTo: () => {},
+    goBack: () => {},
 });
 
-const [activePage, setActivePage] = createSignal<Page>('query');
+const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
+    const [history, setHistory] = createStore<(GQLType | GQLField)[]>([]);
 
-const Documentation: Component<{ schema: GraphQLSchema }> = ({ schema }) => {
-    console.log(schema);
     return (
-        <Context.Provider value={{ schema }}>
-            <Show when={activePage() === 'main'}>
-                <MainPage />
-            </Show>
-            <Show when={activePage() === 'query'}>
-                <ObjectPage object={schema.getQueryType()!} />
-            </Show>
-            <Show when={activePage() === 'mutation'}>
-                <ObjectPage object={schema.getMutationType()!} />
+        <Context.Provider
+            value={{
+                schema: props.schema,
+                goTo: (type) =>
+                    setHistory(produce((history) => history.push(type))),
+                goBack: () => setHistory(produce((history) => history.pop())),
+            }}
+        >
+            <Show when={history.length > 0} fallback={<MainPage />}>
+                <Switch>
+                    <Match when={isType(history.at(-1))}>
+                        <TypeResolverPage
+                            type={history[history.length - 1] as GQLType}
+                        />
+                    </Match>
+                    <Match when={!isType(history.at(-1))}>
+                        <FieldPage
+                            field={history.at(-1) as GraphQLField<any, any>}
+                        />
+                    </Match>
+                </Switch>
             </Show>
         </Context.Provider>
     );
 };
 
+const TypeResolverPage: Component<{
+    type: GQLType;
+    field?: boolean;
+}> = (props) => {
+    return (
+        <Switch>
+            <Match when={isScalarType(props.type)}>
+                <ScalarTypePage type={props.type as GraphQLScalarType} />
+            </Match>
+            <Match when={isObjectType(props.type)}>
+                <ObjectTypePage type={props.type as GraphQLObjectType} />
+            </Match>
+            <Match when={isInputObjectType(props.type)}>
+                <InputObjectTypePage
+                    type={props.type as GraphQLInputObjectType}
+                />
+            </Match>
+            <Match when={isListType(props.type) || isNonNullType(props.type)}>
+                <TypeResolverPage type={(props.type as GQLList).ofType} />
+            </Match>
+        </Switch>
+    );
+};
+
 const MainPage: Component = () => {
+    const { goTo } = useContext(Context);
     const { schema } = useContext(Context);
 
     return (
         <div>
             <button
-                onClick={() => setActivePage('query')}
+                onClick={() => goTo(schema!.getQueryType()!)}
                 class={`link-primary link block ${
-                    !schema?.getMutationType() && 'link-accent'
+                    !schema?.getQueryType() && 'link-accent'
                 }`}
                 type="button"
                 disabled={!schema?.getQueryType()}
@@ -47,7 +109,7 @@ const MainPage: Component = () => {
                 Query
             </button>
             <button
-                onClick={() => setActivePage('mutation')}
+                onClick={() => goTo(schema!.getMutationType()!)}
                 class={`link-primary link block ${
                     !schema?.getMutationType() && 'link-accent'
                 }`}
@@ -60,34 +122,29 @@ const MainPage: Component = () => {
     );
 };
 
-function buildFieldNameArgs(field: GraphQLField<any, any, any>): string {
-    return (
-        field.name +
-        (field.args.length > 0
-            ? '(' + field.args.map((arg) => arg.name).join(', ') + ')'
-            : '')
-    );
-}
-
-const ObjectPage: Component<{ object: GraphQLObjectType }> = ({ object }) => {
-    const fields = extractFields(object);
+const ObjectTypePage: Component<{ type: GraphQLObjectType }> = (props) => {
+    const { goTo, goBack } = useContext(Context);
+    const getFields = () => extractFields(props.type);
     return (
         <div>
             <div class="flex gap-2">
-                <button onClick={() => setActivePage('main')} type="button">
+                <button onClick={goBack} type="button">
                     <Icon path={arrowLeft} class="h-4 w-4" />
                 </button>
-                <h1>{object.name}</h1>
-                <p>{object.description}</p>
+                <h1>{props.type.name}</h1>
             </div>
+            <p>{props.type.description}</p>
             <ul class="flex flex-col gap-2">
-                <For each={fields}>
+                <For each={getFields()}>
                     {(field) => (
                         <li>
                             <p>
-                                <button>{buildFieldNameArgs(field)}</button> 
-                                {' '}
-                                <button>{field.type.toString()}</button>
+                                <button onClick={() => goTo(field)}>
+                                    {buildFieldNameArgs(field)}
+                                </button>{' '}
+                                <button onClick={() => goTo(field.type)}>
+                                    {field.type.toString()}
+                                </button>
                             </p>
                             <p>{field.description}</p>
                         </li>
@@ -97,5 +154,95 @@ const ObjectPage: Component<{ object: GraphQLObjectType }> = ({ object }) => {
         </div>
     );
 };
+
+const InputObjectTypePage: Component<{ type: GraphQLInputObjectType }> = (
+    props
+) => {
+    const { goTo, goBack } = useContext(Context);
+    const getFields = () => extractFields(props.type);
+    return (
+        <div>
+            <div class="flex gap-2">
+                <button onClick={goBack} type="button">
+                    <Icon path={arrowLeft} class="h-4 w-4" />
+                </button>
+                <h1>{props.type.name}</h1>
+            </div>
+            <p>{props.type.description}</p>
+            <ul class="flex flex-col gap-2">
+                <For each={getFields()}>
+                    {(field) => (
+                        <li>
+                            <p>
+                                <span>{field.name}</span>{' '}
+                                <button onClick={() => goTo(field.type)}>
+                                    {field.type.toString()}
+                                </button>
+                            </p>
+                            <p>{field.description}</p>
+                        </li>
+                    )}
+                </For>
+            </ul>
+        </div>
+    );
+};
+
+const ScalarTypePage: Component<{ type: GraphQLScalarType }> = (props) => {
+    const { goBack } = useContext(Context);
+    return (
+        <div>
+            <div class="flex gap-2">
+                <button onClick={goBack} type="button">
+                    <Icon path={arrowLeft} class="h-4 w-4" />
+                </button>
+                <h1>{props.type.name}</h1>
+            </div>
+            <p>{props.type.description}</p>
+        </div>
+    );
+};
+
+const FieldPage: Component<{ field: GQLField }> = (props) => {
+    const { goTo, goBack } = useContext(Context);
+    return (
+        <div>
+            <div class="flex gap-2">
+                <button onClick={goBack} type="button">
+                    <Icon path={arrowLeft} class="h-4 w-4" />
+                </button>
+                <h1>{props.field.name}</h1>
+            </div>
+            <p>{props.field.description}</p>
+            <button onClick={() => goTo(props.field.type)}>
+                {props.field.type.toString()}
+            </button>
+            <ul class="flex flex-col gap-2">
+                <For each={props.field.args}>
+                    {(arg) => (
+                        <li>
+                            <p>
+                                <button>{arg.name}</button>{' '}
+                                <button onClick={() => goTo(arg.type)}>
+                                    {arg.type.toString()}
+                                </button>
+                            </p>
+                            <p>{arg.description}</p>
+                        </li>
+                    )}
+                </For>
+            </ul>
+        </div>
+    );
+};
+
+function buildFieldNameArgs(field: GQLField): string {
+    return (
+        field.name +
+        (field.args.length > 0
+            ? '(' + field.args.map((arg) => arg.name).join(', ') + ')'
+            : '')
+    );
+}
 
 export default Documentation;
