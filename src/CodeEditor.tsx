@@ -61,7 +61,10 @@ export const CodeEditor: Component<{
     ]);
 
     createEffect(() => {
-        if (editorView()) updateSchema(editorView(), getSchema());
+        if (editorView()) {
+            updateSchema(editorView(), getSchema());
+            editorView().focus()
+        }
     });
 
     return <div ref={ref} class="h-full" />;
