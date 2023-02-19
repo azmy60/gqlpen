@@ -36,11 +36,11 @@ export const App: Component = () => {
             <main class="flex h-screen flex-col">
                 <TopBar />
                 <div class="flex grow flex-col md:flex-row">
-                    <div class="grow basis-0">
+                    <div class="grow basis-0 overflow-auto">
                         <CodeEditor onCtrlEnter={sendQuery} />
                     </div>
                     <div class="bg-neutral-900 py-0.5" />
-                    <div class="grow basis-0">
+                    <div class="grow basis-0 overflow-auto">
                         <Preview />
                     </div>
                 </div>
