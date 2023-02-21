@@ -1,9 +1,11 @@
-import { Component, onCleanup, onMount } from 'solid-js';
+import { Component, onCleanup, onMount, Show } from 'solid-js';
 import toast, { Toaster } from 'solid-toast';
-import { getIsStoreDirty, save } from './state';
+import { getIsStoreDirty, globalStore, save } from './state';
 import { CodeEditor, Preview } from './CodeEditor';
 import TopBar, { sendQuery } from './TopBar';
 import StatusBar from './StatusBar';
+import Documentation from './Documentation';
+import { getSchema } from './schema';
 
 export const App: Component = () => {
     function handleDocumentCtrlS(event: KeyboardEvent) {
@@ -43,6 +45,13 @@ export const App: Component = () => {
                     <div class="grow basis-0 overflow-auto">
                         <Preview />
                     </div>
+                    <Show when={globalStore.openDocs}>
+                        <div class="grow basis-0 overflow-auto">
+                            <Show when={getSchema()}>
+                                <Documentation schema={getSchema()!} />
+                            </Show>
+                        </div>
+                    </Show>
                 </div>
                 <StatusBar />
             </main>

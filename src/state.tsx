@@ -9,6 +9,7 @@ interface GlobalStore {
     result: any;
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
+    openDocs: boolean;
 }
 
 function getSavedGlobalStore(): GlobalStore {
@@ -23,6 +24,7 @@ function getSavedGlobalStore(): GlobalStore {
             result: {},
             introspectionHeaders: [{ key: '', value: '' }],
             queryHeaders: [{ key: '', value: '' }],
+            openDocs: false,
         };
     }
 }

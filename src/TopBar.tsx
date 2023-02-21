@@ -148,6 +148,13 @@ const TopBar: Component = () => {
             >
                 Send
             </button>
+            <button
+                type="button"
+                onClick={() => setGlobalStore('openDocs', (b) => !b)}
+                class="btn-outline btn"
+            >
+                Docs
+            </button>
         </div>
     );
 };
