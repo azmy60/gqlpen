@@ -4,6 +4,7 @@ import { arrowPath } from 'solid-heroicons/solid';
 import { Component, createSignal, onMount } from 'solid-js';
 import { unwrap } from 'solid-js/store';
 import toast from 'solid-toast';
+import { buildSchema } from './schema';
 import { globalStore, setGlobalStore } from './state';
 
 async function updateGlobalIntrospection(
@@ -87,6 +88,7 @@ const TopBar: Component = () => {
                 globalStore.introspectionHeaders
             );
             await updateGlobalIntrospection(globalStore.endpoint, headers);
+            buildSchema()
         } catch (e) {
             toast.error('Failed to load schema');
             console.error(e);

@@ -1,7 +1,14 @@
 import { globalStore } from './state';
-import { buildClientSchema, GraphQLSchema } from 'graphql';
+import type { GraphQLSchema } from 'graphql';
+import { buildClientSchema } from 'graphql';
+import { createSignal } from 'solid-js';
 
-export function getSchema(): GraphQLSchema | undefined {
-    if (!globalStore.introspection) return;
-    return buildClientSchema(globalStore.introspection);
+const [schema, setSchema] = createSignal<GraphQLSchema | null>(null);
+
+export { schema };
+
+export function buildSchema() {
+    if (!globalStore.introspection) throw new Error('No introspection data');
+
+    setSchema(buildClientSchema(globalStore.introspection));
 }

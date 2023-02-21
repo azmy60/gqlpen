@@ -29,11 +29,11 @@ type GQLField = GraphQLField<any, any>;
 type GQLList = GraphQLList<any>;
 
 const Context = createContext<{
-    schema: GraphQLSchema | null;
+    schema: () => GraphQLSchema | null;
     goTo: (type: GQLType | GQLField) => void;
     goBack: () => void;
 }>({
-    schema: null,
+    schema: () => null,
     goTo: () => {},
     goBack: () => {},
 });
@@ -44,7 +44,7 @@ const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
     return (
         <Context.Provider
             value={{
-                schema: props.schema,
+                schema: () => props.schema,
                 goTo: (type) =>
                     setHistory(produce((history) => history.push(type))),
                 goBack: () => setHistory(produce((history) => history.pop())),
@@ -99,22 +99,22 @@ const MainPage: Component = () => {
     return (
         <div>
             <button
-                onClick={() => goTo(schema!.getQueryType()!)}
+                onClick={() => goTo(schema()!.getQueryType()!)}
                 class={`link-primary link block ${
-                    !schema?.getQueryType() && 'link-accent'
+                    !schema()?.getQueryType() && 'link-accent'
                 }`}
                 type="button"
-                disabled={!schema?.getQueryType()}
+                disabled={!schema()?.getQueryType()}
             >
                 Query
             </button>
             <button
-                onClick={() => goTo(schema!.getMutationType()!)}
+                onClick={() => goTo(schema()!.getMutationType()!)}
                 class={`link-primary link block ${
-                    !schema?.getMutationType() && 'link-accent'
+                    !schema()?.getMutationType() && 'link-accent'
                 }`}
                 type="button"
-                disabled={!schema?.getMutationType()}
+                disabled={!schema()?.getMutationType()}
             >
                 Mutation
             </button>

@@ -5,7 +5,7 @@ import { CodeEditor, Preview } from './CodeEditor';
 import TopBar, { sendQuery } from './TopBar';
 import StatusBar from './StatusBar';
 import Documentation from './Documentation';
-import { getSchema } from './schema';
+import { buildSchema, schema } from './schema';
 
 export const App: Component = () => {
     function handleDocumentCtrlS(event: KeyboardEvent) {
@@ -21,6 +21,13 @@ export const App: Component = () => {
             event.preventDefault();
             return (event.returnValue = '');
         }
+    }
+
+    try {
+        buildSchema()
+    } catch(e) {
+        console.error(e)
+        toast.error('Failed to build schema')
     }
 
     onMount(() => {
@@ -47,8 +54,8 @@ export const App: Component = () => {
                     </div>
                     <Show when={globalStore.openDocs}>
                         <div class="grow basis-0 overflow-auto">
-                            <Show when={getSchema()}>
-                                <Documentation schema={getSchema()!} />
+                            <Show when={schema()}>
+                                <Documentation schema={schema()!} />
                             </Show>
                         </div>
                     </Show>

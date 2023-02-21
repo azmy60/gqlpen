@@ -1,4 +1,4 @@
-import type { GraphQLSchema, IntrospectionQuery } from 'graphql';
+import { GraphQLSchema, IntrospectionQuery } from 'graphql';
 import { createStore } from 'solid-js/store';
 
 interface GlobalStore {

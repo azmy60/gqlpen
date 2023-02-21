@@ -22,7 +22,7 @@ import {
     indentWithTab,
 } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
-import { getSchema } from './schema';
+import { schema } from './schema';
 
 const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 
@@ -61,9 +61,9 @@ export const CodeEditor: Component<{
     ]);
 
     createEffect(() => {
-        if (editorView()) {
-            updateSchema(editorView(), getSchema());
-            editorView().focus()
+        if (editorView() && schema()) {
+            updateSchema(editorView(), schema()!);
+            editorView().focus();
         }
     });
 
