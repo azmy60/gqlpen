@@ -10,9 +10,12 @@ interface GlobalStore {
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
     openDocs: boolean;
+    isQueryLoading: boolean;
 }
 
-function getSavedGlobalStore(): GlobalStore {
+type SavedGlobalStore = Omit<GlobalStore, 'isQueryLoading'>;
+
+function loadGlobalStore(): SavedGlobalStore {
     try {
         return JSON.parse(localStorage.__gqlpen_globalStore);
     } catch (e) {
@@ -29,13 +32,24 @@ function getSavedGlobalStore(): GlobalStore {
     }
 }
 
-const [globalStore, _setGlobalStore] = createStore<GlobalStore>(
-    getSavedGlobalStore()
-);
-
-export { globalStore };
+function saveGlobalStore(data: SavedGlobalStore) {
+    localStorage.setItem('__gqlpen_globalStore', JSON.stringify(data));
+}
 
 let isStoreDirty = false;
+
+export function save() {
+    const { isQueryLoading, ...rest } = globalStore;
+    saveGlobalStore(rest);
+    isStoreDirty = false;
+}
+
+const [globalStore, _setGlobalStore] = createStore<GlobalStore>({
+    ...loadGlobalStore(),
+    isQueryLoading: false,
+});
+
+export { globalStore };
 
 export function getIsStoreDirty() {
     return isStoreDirty;
@@ -47,8 +61,3 @@ export const setGlobalStore: typeof _setGlobalStore = (...args) => {
     _setGlobalStore(...args);
     isStoreDirty = true;
 };
-
-export function save() {
-    localStorage.setItem('__gqlpen_globalStore', JSON.stringify(globalStore));
-    isStoreDirty = false;
-}

@@ -1,77 +1,9 @@
-import { getIntrospectionQuery } from 'graphql';
 import { Icon } from 'solid-heroicons';
 import { arrowPath } from 'solid-heroicons/solid';
 import { Component, createSignal, onMount } from 'solid-js';
-import { unwrap } from 'solid-js/store';
 import toast from 'solid-toast';
-import { buildSchema } from './graphql';
+import { buildSchema, globalQuery, updateIntrospection } from './graphql';
 import { globalStore, setGlobalStore } from './state';
-
-async function updateGlobalIntrospection(
-    endpoint: string,
-    headers?: Record<string, string>
-) {
-    const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            ...headers,
-        },
-        body: JSON.stringify({
-            query: getIntrospectionQuery(),
-        }),
-    });
-    const introspection = (await res.json()).data;
-    setGlobalStore('introspection', introspection);
-}
-
-function transformHeadersArrayToObject(
-    headers: { key: string; value: string }[]
-): Record<string, string> {
-    return headers.reduce(
-        (acc, curr) => ({
-            ...acc,
-            ...(curr.key && { [curr.key]: curr.value }),
-        }),
-        {}
-    );
-}
-
-async function queryFetcher(
-    endpoint: string,
-    query: string,
-    headers?: Record<string, string>
-): Promise<any> {
-    return fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            ...headers,
-        },
-        body: JSON.stringify({ query }),
-    }).then((res) => res.json());
-}
-
-const [loadingQuery, setLoadingQuery] = createSignal(false);
-
-export async function sendQuery() {
-    setLoadingQuery(true);
-    try {
-        const result = await queryFetcher(
-            globalStore.endpoint,
-            globalStore.query,
-            transformHeadersArrayToObject(unwrap(globalStore.queryHeaders))
-        );
-        setGlobalStore('result', () => {});
-        setGlobalStore('result', result);
-    } catch (e) {
-        toast.error('Failed to fetch query');
-        console.error(e);
-    }
-    setLoadingQuery(false);
-}
 
 const TopBar: Component = () => {
     const [loading, setLoading] = createSignal(false);
@@ -84,16 +16,17 @@ const TopBar: Component = () => {
     async function loadIntrospection() {
         setLoading(true);
         try {
-            const headers = transformHeadersArrayToObject(
-                globalStore.introspectionHeaders
-            );
-            await updateGlobalIntrospection(globalStore.endpoint, headers);
-            buildSchema()
+            await updateIntrospection();
+            buildSchema();
         } catch (e) {
             toast.error('Failed to load schema');
             console.error(e);
         }
         setLoading(false);
+    }
+
+    function toggleDocs() {
+        setGlobalStore('openDocs', (b) => !b);
     }
 
     return (
@@ -144,17 +77,13 @@ const TopBar: Component = () => {
             </div>
             <button
                 type="button"
-                onClick={sendQuery}
-                disabled={loadingQuery()}
+                onClick={globalQuery}
+                disabled={globalStore.isQueryLoading}
                 class="btn-primary btn"
             >
                 Send
             </button>
-            <button
-                type="button"
-                onClick={() => setGlobalStore('openDocs', (b) => !b)}
-                class="btn-outline btn"
-            >
+            <button type="button" onClick={toggleDocs} class="btn-outline btn">
                 Docs
             </button>
         </div>

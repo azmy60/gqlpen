@@ -2,11 +2,10 @@ import { Component, onCleanup, onMount, Show } from 'solid-js';
 import toast, { Toaster } from 'solid-toast';
 import { getIsStoreDirty, globalStore, save } from './state';
 import { CodeEditor, Preview } from './CodeEditor';
-import TopBar, { sendQuery } from './TopBar';
+import TopBar from './TopBar';
 import StatusBar from './StatusBar';
 import Documentation from './Documentation';
-import { buildSchema, schema } from './graphql';
-import { Tab, TabContainer } from './Tab';
+import { buildSchema, globalQuery, schema } from './graphql';
 
 export const App: Component = () => {
     function handleDocumentCtrlS(event: KeyboardEvent) {
@@ -47,7 +46,7 @@ export const App: Component = () => {
                 <TopBar />
                 <div class="flex grow flex-col md:flex-row">
                     <div class="grow basis-0 overflow-auto">
-                        <CodeEditor onCtrlEnter={sendQuery} />
+                        <CodeEditor onCtrlEnter={globalQuery} />
                     </div>
                     <div class="bg-neutral-900 py-0.5" />
                     <div class="grow basis-0 overflow-auto">
