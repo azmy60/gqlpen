@@ -1,7 +1,7 @@
 import { GraphQLSchema, IntrospectionQuery } from 'graphql';
 import { createStore } from 'solid-js/store';
 
-interface GlobalStore {
+interface PersistentGlobalStore {
     endpoint: string;
     query: string;
     schema: GraphQLSchema | null;
@@ -10,12 +10,15 @@ interface GlobalStore {
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
     openDocs: boolean;
+}
+
+interface TemporaryGlobalStore {
     isQueryLoading: boolean;
 }
 
-type SavedGlobalStore = Omit<GlobalStore, 'isQueryLoading'>;
+type GlobalStore = PersistentGlobalStore & TemporaryGlobalStore;
 
-function loadGlobalStore(): SavedGlobalStore {
+function loadGlobalStore(): PersistentGlobalStore {
     try {
         return JSON.parse(localStorage.__gqlpen_globalStore);
     } catch (e) {
@@ -32,7 +35,7 @@ function loadGlobalStore(): SavedGlobalStore {
     }
 }
 
-function saveGlobalStore(data: SavedGlobalStore) {
+function saveGlobalStore(data: PersistentGlobalStore) {
     localStorage.setItem('__gqlpen_globalStore', JSON.stringify(data));
 }
 
