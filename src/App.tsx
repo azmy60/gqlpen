@@ -44,7 +44,7 @@ export const App: Component = () => {
         <>
             <main class="flex h-screen flex-col">
                 <TopBar />
-                <div class="flex grow flex-col md:flex-row">
+                <div class="flex grow flex-col overflow-x-hidden md:flex-row">
                     <div class="grow basis-0 overflow-auto">
                         <CodeEditor onCtrlEnter={globalQuery} />
                     </div>
