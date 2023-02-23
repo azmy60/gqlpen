@@ -1,11 +1,16 @@
-import { Component, onCleanup, onMount, Show } from 'solid-js';
+import type { Component } from 'solid-js';
+import { For, onCleanup, onMount, Show } from 'solid-js';
 import toast, { Toaster } from 'solid-toast';
-import { getIsStoreDirty, globalStore, save } from './state';
+import { globalStore, save, setGlobalStore } from './state';
 import { CodeEditor, Preview } from './CodeEditor';
 import TopBar from './TopBar';
 import StatusBar from './StatusBar';
 import Documentation from './Documentation';
 import { buildSchema, globalQuery, schema } from './graphql';
+import { Tab, Tabs } from './Tabs';
+import { Icon } from 'solid-heroicons';
+import { plus } from 'solid-heroicons/solid';
+import { produce } from 'solid-js/store';
 
 export const App: Component = () => {
     function handleDocumentCtrlS(event: KeyboardEvent) {
@@ -40,13 +45,46 @@ export const App: Component = () => {
         window.removeEventListener('beforeunload', confirmExit);
     });
 
+    function handleNewTab() {
+        setGlobalStore(
+            'sheets',
+            produce((sheets) =>
+                sheets.push({
+                    name: `Sheet ${sheets.length + 1}`,
+                    content: '',
+                })
+            )
+        );
+        setGlobalStore('activeSheet', globalStore.sheets.length - 1);
+    }
+
     return (
         <>
             <main class="flex h-screen flex-col">
                 <TopBar />
-                <div class="flex grow flex-col overflow-x-hidden md:flex-row">
-                    <div class="grow basis-0 overflow-auto">
-                        <CodeEditor onCtrlEnter={globalQuery} />
+                <div class="flex grow basis-0 flex-col overflow-x-hidden md:flex-row">
+                    <div class="flex grow basis-0 flex-col">
+                        <Tabs>
+                            <For each={globalStore.sheets}>
+                                {(sheet, i) => (
+                                    <Tab
+                                        active={i() === globalStore.activeSheet}
+                                        onClick={() =>
+                                            setGlobalStore('activeSheet', i)
+                                        }
+                                    >
+                                        {sheet.name}
+                                    </Tab>
+                                )}
+                            </For>
+                            <button onClick={handleNewTab} class="ml-2 h-full">
+                                <Icon path={plus} class="h-4 w-4" />
+                            </button>
+                        </Tabs>
+                        <CodeEditor
+                            onCtrlEnter={globalQuery}
+                            class="grow overflow-auto"
+                        />
                     </div>
                     <div class="bg-neutral-900 py-0.5" />
                     <div class="grow basis-0 overflow-auto">

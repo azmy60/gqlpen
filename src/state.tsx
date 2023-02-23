@@ -10,6 +10,8 @@ interface PersistentGlobalStore {
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
     openDocs: boolean;
+    sheets: { name: string; content: string }[];
+    activeSheet: number;
 }
 
 interface TemporaryGlobalStore {
@@ -31,6 +33,8 @@ function loadGlobalStore(): PersistentGlobalStore {
             introspectionHeaders: [{ key: '', value: '' }],
             queryHeaders: [{ key: '', value: '' }],
             openDocs: false,
+            sheets: [{ name: 'Sheet 1', content: '' }],
+            activeSheet: 0,
         };
     }
 }

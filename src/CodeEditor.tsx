@@ -28,12 +28,13 @@ const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 
 export const CodeEditor: Component<{
     onCtrlEnter: () => void;
-}> = ({ onCtrlEnter }) => {
+    class?: string;
+}> = (props) => {
     const { ref, createExtension, editorView } = createCodeMirror({
-        onValueChange: (value) => setGlobalStore('query', value),
+        onValueChange: (value) => setGlobalStore('sheets', globalStore.activeSheet, 'content', value),
     });
 
-    createEditorControlledValue(editorView, () => globalStore.query);
+    createEditorControlledValue(editorView, () => globalStore.sheets[globalStore.activeSheet].content);
     createExtension([
         fullHeight,
         graphql(),
@@ -48,7 +49,7 @@ export const CodeEditor: Component<{
             {
                 key: 'Ctrl-Enter',
                 run() {
-                    onCtrlEnter();
+                    props.onCtrlEnter();
                     return true;
                 },
             },
@@ -67,7 +68,7 @@ export const CodeEditor: Component<{
         }
     });
 
-    return <div ref={ref} class="h-full" />;
+    return <div ref={ref} class={props.class}/>;
 };
 
 export const Preview: Component = () => {

@@ -57,23 +57,21 @@ export async function updateIntrospection() {
         globalStore.endpoint,
         transformHeadersArrayToObject(globalStore.introspectionHeaders)
     );
-    const introspection = (await res.json()).data;
-    setGlobalStore('introspection', introspection);
+    setGlobalStore('introspection', res.data);
 }
 
-function queryIntrospection(endpoint: string, headers?: Headers) {
-    return query(endpoint, getIntrospectionQuery(), headers);
+async function queryIntrospection(endpoint: string, headers?: Headers) {
+    return await query(endpoint, getIntrospectionQuery(), headers);
 }
 
 export async function globalQuery() {
     setGlobalStore('isQueryLoading', true);
     try {
-        const res = await query(
+        const result = await query(
             globalStore.endpoint,
-            globalStore.query,
+            globalStore.sheets[globalStore.activeSheet].content,
             transformHeadersArrayToObject(globalStore.queryHeaders)
         );
-        const result = await res.json();
         setGlobalStore('result', () => {});
         setGlobalStore('result', result);
     } catch (e) {
