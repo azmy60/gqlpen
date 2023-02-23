@@ -5,7 +5,8 @@ import { CodeEditor, Preview } from './CodeEditor';
 import TopBar, { sendQuery } from './TopBar';
 import StatusBar from './StatusBar';
 import Documentation from './Documentation';
-import { buildSchema, schema } from './schema';
+import { buildSchema, schema } from './graphql';
+import { Tab, TabContainer } from './Tab';
 
 export const App: Component = () => {
     function handleDocumentCtrlS(event: KeyboardEvent) {
@@ -24,10 +25,10 @@ export const App: Component = () => {
     }
 
     try {
-        buildSchema()
-    } catch(e) {
-        console.error(e)
-        toast.error('Failed to build schema')
+        buildSchema();
+    } catch (e) {
+        console.error(e);
+        toast.error('Failed to build schema');
     }
 
     onMount(() => {

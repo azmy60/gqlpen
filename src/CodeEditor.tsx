@@ -22,7 +22,7 @@ import {
     indentWithTab,
 } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
-import { schema } from './schema';
+import { schema } from './graphql';
 
 const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 

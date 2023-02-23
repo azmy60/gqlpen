@@ -4,7 +4,7 @@ import { arrowPath } from 'solid-heroicons/solid';
 import { Component, createSignal, onMount } from 'solid-js';
 import { unwrap } from 'solid-js/store';
 import toast from 'solid-toast';
-import { buildSchema } from './schema';
+import { buildSchema } from './graphql';
 import { globalStore, setGlobalStore } from './state';
 
 async function updateGlobalIntrospection(
