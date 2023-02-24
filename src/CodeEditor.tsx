@@ -5,7 +5,6 @@ import {
     completionKeymap,
 } from '@codemirror/autocomplete';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { graphql, updateSchema } from 'cm6-graphql';
 import {
@@ -23,6 +22,7 @@ import {
 } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
 import { schema } from './graphql';
+import { tokyoNight } from '@uiw/codemirror-theme-tokyo-night';
 
 const fullHeight = EditorView.theme({ '&': { height: '100%' } });
 
@@ -39,7 +39,11 @@ export const CodeEditor: Component<{
         fullHeight,
         graphql(),
         autocompletion(),
-        oneDark,
+        EditorView.theme({
+            '&': { backgroundColor: '#050505' },
+            '.cm-gutters': { backgroundColor: '#050505' },
+        }),
+        tokyoNight,
         indentOnInput(),
         bracketMatching(),
         closeBrackets(),
@@ -81,9 +85,9 @@ export const Preview: Component = () => {
     createExtension([
         fullHeight,
         EditorView.theme({
-            '&': { backgroundColor: 'black' },
+            '&': { backgroundColor: '#050505' },
         }),
-        oneDark,
+        tokyoNight,
         json(),
     ]);
 

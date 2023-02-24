@@ -22,6 +22,9 @@ module.exports = {
                     success: '#36D399',
                     warning: '#facc15',
                     error: '#ef4444',
+
+                    '--rounded-btn': '0.5rem',
+                    '--btn-text-case': 'normal',
                 },
             },
         ],

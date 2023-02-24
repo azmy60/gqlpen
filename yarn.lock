@@ -958,6 +958,22 @@
   dependencies:
     "@types/yargs-parser" "*"
 
+"@uiw/codemirror-theme-tokyo-night@^4.19.9":
+  version "4.19.9"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-theme-tokyo-night/-/codemirror-theme-tokyo-night-4.19.9.tgz#529b0af8cb06aeae4a43caad6425eb9d9404aba2"
+  integrity sha512-AWxY2dIJSwXGSu/kgnb5/kDyjX6fYgJrt6e8FKszGf7V/ctgE/eA1lJhDAXqbErC9tx25XDkS+oE7dyoOtZ9Ag==
+  dependencies:
+    "@uiw/codemirror-themes" "4.19.9"
+
+"@uiw/codemirror-themes@4.19.9":
+  version "4.19.9"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-themes/-/codemirror-themes-4.19.9.tgz#988876213a2e350244ac2a0d479ebb792afbe94d"
+  integrity sha512-PH3hl1w42z7GXe/zoD9gSadOGBWyKPl7vHm/8V1PUuHXT21+neyfRc7v0xPwb05pGP6ExfbmPi78y4+g6cHopg==
+  dependencies:
+    "@codemirror/language" "^6.0.0"
+    "@codemirror/state" "^6.0.0"
+    "@codemirror/view" "^6.0.0"
+
 "@vitest/expect@0.28.4":
   version "0.28.4"
   resolved "https://registry.yarnpkg.com/@vitest/expect/-/expect-0.28.4.tgz#09f2513d2ea951057660540ae235609a0d6378f9"

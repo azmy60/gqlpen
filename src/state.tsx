@@ -12,10 +12,12 @@ interface PersistentGlobalStore {
     openDocs: boolean;
     sheets: { name: string; content: string }[];
     activeSheet: number;
+    rightWindow: 'docs' | 'settings' | 'none';
 }
 
 interface TemporaryGlobalStore {
     isQueryLoading: boolean;
+    isIntrospectionLoading: boolean;
 }
 
 type GlobalStore = PersistentGlobalStore & TemporaryGlobalStore;
@@ -30,11 +32,12 @@ function loadGlobalStore(): PersistentGlobalStore {
             schema: null,
             introspection: null,
             result: {},
-            introspectionHeaders: [{ key: '', value: '' }],
-            queryHeaders: [{ key: '', value: '' }],
+            introspectionHeaders: [],
+            queryHeaders: [],
             openDocs: false,
             sheets: [{ name: 'Sheet 1', content: '' }],
             activeSheet: 0,
+            rightWindow: 'none',
         };
     }
 }
@@ -46,7 +49,7 @@ function saveGlobalStore(data: PersistentGlobalStore) {
 let isStoreDirty = false;
 
 export function save() {
-    const { isQueryLoading, ...rest } = globalStore;
+    const { isQueryLoading, isIntrospectionLoading, ...rest } = globalStore;
     saveGlobalStore(rest);
     isStoreDirty = false;
 }
@@ -54,6 +57,7 @@ export function save() {
 const [globalStore, _setGlobalStore] = createStore<GlobalStore>({
     ...loadGlobalStore(),
     isQueryLoading: false,
+    isIntrospectionLoading: false,
 });
 
 export { globalStore };

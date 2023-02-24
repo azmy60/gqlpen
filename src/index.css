@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.input {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+}
+
+.label {
+    @apply pt-0 pl-0;
+}
+
+.label-text {
+    font-weight: 600;
+}
+
+.btn {
+    height: 2.625rem;
+}
+
+.btn-outline {
+    --tw-border-opacity: 0.2;
+    border-color: hsl(var(--bc) / var(--tw-border-opacity));
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #303236 #050505;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #050505;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #303236;
+    border-radius: 10px;
+    border: 0px solid #ffffff;
+}

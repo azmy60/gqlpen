@@ -53,11 +53,13 @@ function transformHeadersArrayToObject(
 }
 
 export async function updateIntrospection() {
+    setGlobalStore('isIntrospectionLoading', true);
     const res = await queryIntrospection(
         globalStore.endpoint,
         transformHeadersArrayToObject(globalStore.introspectionHeaders)
     );
     setGlobalStore('introspection', res.data);
+    setGlobalStore('isIntrospectionLoading', false);
 }
 
 async function queryIntrospection(endpoint: string, headers?: Headers) {
