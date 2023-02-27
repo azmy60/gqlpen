@@ -1,4 +1,8 @@
-import { getIntrospectionQuery, GraphQLSchema } from 'graphql';
+import {
+    getIntrospectionQuery,
+    GraphQLSchema,
+    IntrospectionQuery,
+} from 'graphql';
 import {
     GraphQLField,
     GraphQLInputField,
@@ -24,10 +28,8 @@ const [schema, setSchema] = createSignal<GraphQLSchema | null>(null);
 
 export { schema };
 
-export function buildSchema() {
-    if (!globalStore.introspection) throw new Error('No introspection data');
-
-    setSchema(buildClientSchema(globalStore.introspection));
+export function buildSchema(introspection: IntrospectionQuery) {
+    setSchema(buildClientSchema(introspection));
 }
 
 type Headers = Record<string, string>;
@@ -52,18 +54,19 @@ function transformHeadersArrayToObject(
     );
 }
 
-export async function updateIntrospection() {
+export async function getIntrospection(): Promise<IntrospectionQuery> {
     setGlobalStore('isIntrospectionLoading', true);
-    const res = await queryIntrospection(
+    const introspection = await queryIntrospection(
         globalStore.endpoint,
         transformHeadersArrayToObject(globalStore.introspectionHeaders)
     );
-    setGlobalStore('introspection', res.data);
+    setGlobalStore('introspection', introspection);
     setGlobalStore('isIntrospectionLoading', false);
+    return introspection;
 }
 
 async function queryIntrospection(endpoint: string, headers?: Headers) {
-    return await query(endpoint, getIntrospectionQuery(), headers);
+    return (await query(endpoint, getIntrospectionQuery(), headers)).data;
 }
 
 export async function globalQuery() {

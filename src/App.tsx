@@ -10,7 +10,7 @@ import {
     buildSchema,
     globalQuery,
     schema,
-    updateIntrospection,
+    getIntrospection,
 } from './graphql';
 import { Tab, Tabs } from './Tabs';
 import { Icon } from 'solid-heroicons';
@@ -56,14 +56,15 @@ export const App: Component = () => {
         }
     }
 
-    try {
-        buildSchema();
-    } catch (e) {
-        console.error(e);
-        toast.error('Failed to build schema');
-    }
-
     onMount(() => {
+        (async () => {
+            try {
+                const introspection =
+                    globalStore.introspection ?? (await getIntrospection());
+                buildSchema(introspection);
+            } catch (e) {}
+        })();
+
         document.addEventListener('keydown', handleDocumentCtrlS);
         window.addEventListener('beforeunload', confirmExit);
     });
@@ -87,12 +88,17 @@ export const App: Component = () => {
     }
 
     const toggleSettings = () => {
-        setGlobalStore('rightWindow', globalStore.rightWindow === 'settings' ? 'none' : 'settings');
-    }
+        setGlobalStore(
+            'rightWindow',
+            globalStore.rightWindow === 'settings' ? 'none' : 'settings'
+        );
+    };
     const toggleDocs = () => {
-        setGlobalStore('rightWindow', globalStore.rightWindow === 'docs' ? 'none' : 'docs');
-    }
-        
+        setGlobalStore(
+            'rightWindow',
+            globalStore.rightWindow === 'docs' ? 'none' : 'docs'
+        );
+    };
 
     return (
         <>
@@ -100,15 +106,13 @@ export const App: Component = () => {
                 <div class="flex grow basis-0 flex-col overflow-hidden">
                     <div class="flex items-center px-[1.375rem] py-[1.125rem]">
                         <button
-                                onClick={toggleSettings}
+                            onClick={toggleSettings}
                             class="overflow-hidden text-ellipsis whitespace-nowrap"
                         >
                             {globalStore.endpoint}
                         </button>
                         <div class="ml-2 flex grow items-center">
-                            <button
-                                onClick={toggleSettings}
-                            >
+                            <button onClick={toggleSettings}>
                                 <Icon class="h-6 w-6" path={pencilSquare} />
                             </button>
                             <button
@@ -174,8 +178,9 @@ export const App: Component = () => {
                                                     globalStore.isIntrospectionLoading
                                                 }
                                                 onClick={async () => {
-                                                    await updateIntrospection();
-                                                    buildSchema();
+                                                    buildSchema(
+                                                        await getIntrospection()
+                                                    );
                                                 }}
                                                 class="btn-primary btn-sm btn"
                                             >
