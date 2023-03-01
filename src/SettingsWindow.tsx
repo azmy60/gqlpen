@@ -1,7 +1,8 @@
 import { Icon } from 'solid-heroicons';
 import { plus } from 'solid-heroicons/solid';
-import { Component, For } from 'solid-js';
+import { For } from 'solid-js';
 import { produce } from 'solid-js/store';
+import { KeyValueInputs } from './components';
 import { globalStore, setGlobalStore } from './state';
 
 const SettingsWindow = () => {
@@ -15,6 +16,32 @@ const SettingsWindow = () => {
             produce((headers) => {
                 headers.push({ key: '', value: '' });
             })
+        );
+    };
+
+    const handleIntrospectionInput = (
+        event: InputEvent,
+        index: number,
+        key: 'key' | 'value'
+    ) => {
+        setGlobalStore(
+            'introspectionHeaders',
+            index,
+            key,
+            (event.target as HTMLInputElement).value
+        );
+    };
+
+    const handleQueryInput = (
+        event: InputEvent,
+        index: number,
+        key: 'key' | 'value'
+    ) => {
+        setGlobalStore(
+            'queryHeaders',
+            index,
+            key,
+            (event.target as HTMLInputElement).value
         );
     };
 
@@ -37,10 +64,18 @@ const SettingsWindow = () => {
                     {(header, i) => (
                         <div class="flex gap-[1.375rem]">
                             <KeyValueInputs
-                                type="introspectionHeaders"
-                                index={i()}
                                 keyValue={header.key}
                                 valueValue={header.value}
+                                handleKeyInput={(event) =>
+                                    handleIntrospectionInput(event, i(), 'key')
+                                }
+                                handleValueInput={(event) =>
+                                    handleIntrospectionInput(
+                                        event,
+                                        i(),
+                                        'value'
+                                    )
+                                }
                             />
                         </div>
                     )}
@@ -59,10 +94,14 @@ const SettingsWindow = () => {
                     {(header, i) => (
                         <div class="flex gap-[1.375rem]">
                             <KeyValueInputs
-                                type="queryHeaders"
-                                index={i()}
                                 keyValue={header.key}
                                 valueValue={header.value}
+                                handleKeyInput={(event) =>
+                                    handleQueryInput(event, i(), 'key')
+                                }
+                                handleValueInput={(event) =>
+                                    handleQueryInput(event, i(), 'value')
+                                }
                             />
                         </div>
                     )}
@@ -76,41 +115,6 @@ const SettingsWindow = () => {
                 </button>
             </div>
         </div>
-    );
-};
-
-const KeyValueInputs: Component<{
-    type: 'introspectionHeaders' | 'queryHeaders';
-    index: number;
-    keyValue: string;
-    valueValue: string;
-}> = (props) => {
-    const handleInput = (event: InputEvent, key: 'key' | 'value') => {
-        setGlobalStore(
-            props.type,
-            props.index,
-            key,
-            (event.target as HTMLInputElement).value
-        );
-    };
-
-    return (
-        <>
-            <input
-                type="text"
-                class="input-bordered input w-full"
-                placeholder="Key"
-                value={props.keyValue}
-                onInput={(event) => handleInput(event, 'key')}
-            />
-            <input
-                type="text"
-                class="input-bordered input w-full"
-                placeholder="Value"
-                value={props.valueValue}
-                onInput={(event) => handleInput(event, 'value')}
-            />
-        </>
     );
 };
 
