@@ -1,0 +1,6 @@
+/* Fix overriden font styles in extension page */
+/* https://stackoverflow.com/questions/36778663/html-page-displays-incorrectly-when-loaded-by-chrome-extension */
+body {
+    font-family: inherit;
+    font-size: inherit;
+}
