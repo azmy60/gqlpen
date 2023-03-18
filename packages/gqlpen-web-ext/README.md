@@ -6,3 +6,4 @@ To generate built files, run `yarn dev` or `yarn dev:watch`. And then load the e
 
 ## TODO
 - [ ] listen query from client and send it to proxy server
+- [ ] able to listen to client request in dev tool and then replicate the query
