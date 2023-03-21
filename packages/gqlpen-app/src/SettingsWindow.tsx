@@ -1,6 +1,6 @@
 import { Icon } from 'solid-heroicons';
 import { plus } from 'solid-heroicons/solid';
-import { For } from 'solid-js';
+import { For, onMount } from 'solid-js';
 import { produce } from 'solid-js/store';
 import { KeyValueInputs } from './components';
 import { globalStore, setGlobalStore } from './state';
@@ -45,6 +45,12 @@ const SettingsWindow = () => {
         );
     };
 
+    let endpointInput: HTMLInputElement;
+
+    onMount(() => {
+        endpointInput.focus();
+    });
+
     return (
         <div class="flex flex-col gap-8">
             <div class="form-control w-full">
@@ -56,6 +62,7 @@ const SettingsWindow = () => {
                     class="input-bordered input w-full"
                     value={globalStore.endpoint}
                     onInput={handleEndpointInput}
+                    ref={endpointInput!}
                 />
             </div>
             <div class="flex flex-col gap-[1.375rem]">

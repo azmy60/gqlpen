@@ -11,21 +11,37 @@ import { Icon } from 'solid-heroicons';
 import { xMark } from 'solid-heroicons/outline';
 import { produce } from 'solid-js/store';
 import SettingsWindow from './SettingsWindow';
+import {
+    keyBindings,
+    listenKeybindings,
+    unsubscribeKeybindings,
+} from './keyBindings';
 
 export const App: Component = () => {
-    function handleDocumentCtrlS(event: KeyboardEvent) {
-        if (event.ctrlKey && event.key === 's') {
-            event.preventDefault();
-            save();
-            toast.success('Saved!');
-        }
-    }
-
     function confirmExit(event: BeforeUnloadEvent) {
         if (getIsStoreDirty()) {
             event.preventDefault();
             return (event.returnValue = '');
         }
+    }
+
+    function handleSave() {
+        save();
+        toast.success('Saved');
+    }
+
+    function toggleSidebar() {
+        setGlobalStore('openSidebar', (s) => !s);
+    }
+
+    function openDocs() {
+        setGlobalStore('openSidebar', true);
+        setGlobalStore('sidebar', 'docs');
+    }
+
+    function openSettings() {
+        setGlobalStore('openSidebar', true);
+        setGlobalStore('sidebar', 'settings');
     }
 
     onMount(() => {
@@ -38,12 +54,25 @@ export const App: Component = () => {
             } catch (e) {}
         })();
 
-        document.addEventListener('keydown', handleDocumentCtrlS);
+        listenKeybindings();
+
+        keyBindings.on('ctrl+s', handleSave);
+        keyBindings.on('ctrl+b', toggleSidebar);
+        keyBindings.on('ctrl+shift+e', openDocs);
+        keyBindings.on('ctrl+shift+d', openSettings);
+
         window.addEventListener('beforeunload', confirmExit);
     });
 
     onCleanup(() => {
-        document.removeEventListener('keydown', handleDocumentCtrlS);
+        unsubscribeKeybindings();
+
+        // have to unsub these because of hot reload
+        keyBindings.off('ctrl+s', handleSave);
+        keyBindings.off('ctrl+b', toggleSidebar);
+        keyBindings.off('ctrl+shift+e', openDocs);
+        keyBindings.off('ctrl+shift+d', openSettings);
+
         window.removeEventListener('beforeunload', confirmExit);
     });
 
@@ -74,26 +103,26 @@ export const App: Component = () => {
                 <div class="grow basis-0 overflow-auto">
                     <Preview />
                 </div>
-                <Show when={globalStore.rightWindow !== 'none'}>
+                <Show when={globalStore.openSidebar}>
                     <>
                         <div class="bg-neutral pr-3" />
                         <div class="grow basis-0 overflow-auto px-[1.375rem] pt-[1.125rem]">
                             <div class="flex justify-between pb-8">
                                 <h2 class="text-xl font-semibold text-white">
-                                    {globalStore.rightWindow === 'settings' &&
+                                    {globalStore.sidebar === 'settings' &&
                                         'Settings'}
-                                    {globalStore.rightWindow === 'docs' &&
+                                    {globalStore.sidebar === 'docs' &&
                                         'Documentations'}
                                 </h2>
                                 <button
                                     onClick={() =>
-                                        setGlobalStore('rightWindow', 'none')
+                                        setGlobalStore('openSidebar', false)
                                     }
                                 >
                                     <Icon class="h-6 w-6" path={xMark} />
                                 </button>
                             </div>
-                            <Show when={globalStore.rightWindow === 'docs'}>
+                            <Show when={globalStore.sidebar === 'docs'}>
                                 <Show
                                     when={schema()}
                                     fallback={
@@ -121,7 +150,7 @@ export const App: Component = () => {
                                     <Documentation schema={schema()!} />
                                 </Show>
                             </Show>
-                            <Show when={globalStore.rightWindow === 'settings'}>
+                            <Show when={globalStore.sidebar === 'settings'}>
                                 <SettingsWindow />
                             </Show>
                         </div>

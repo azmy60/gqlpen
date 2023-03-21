@@ -12,7 +12,8 @@ interface PersistentGlobalStore {
     openDocs: boolean;
     sheets: { name: string; content: string }[];
     activeSheet: number;
-    rightWindow: 'docs' | 'settings' | 'none';
+    openSidebar: boolean;
+    sidebar: 'docs' | 'settings';
 }
 
 interface TemporaryGlobalStore {
@@ -37,7 +38,8 @@ function loadGlobalStore(): PersistentGlobalStore {
             openDocs: false,
             sheets: [{ name: 'Sheet 1', content: '' }],
             activeSheet: 0,
-            rightWindow: 'none',
+            sidebar: 'docs',
+            openSidebar: true,
         };
     }
 }

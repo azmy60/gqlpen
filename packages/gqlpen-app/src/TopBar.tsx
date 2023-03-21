@@ -46,17 +46,19 @@ const TopBar: Component = () => {
     }
 
     const toggleSettings = () => {
-        setGlobalStore(
-            'rightWindow',
-            globalStore.rightWindow === 'settings' ? 'none' : 'settings'
-        );
+        if (globalStore.sidebar === 'settings' && globalStore.openSidebar) {
+            return setGlobalStore('openSidebar', false);
+        }
+        setGlobalStore('sidebar', 'settings');
+        setGlobalStore('openSidebar', true);
     };
 
     const toggleDocs = () => {
-        setGlobalStore(
-            'rightWindow',
-            globalStore.rightWindow === 'docs' ? 'none' : 'docs'
-        );
+        if (globalStore.sidebar === 'docs' && globalStore.openSidebar) {
+            return setGlobalStore('openSidebar', false);
+        }
+        setGlobalStore('sidebar', 'docs');
+        setGlobalStore('openSidebar', true);
     };
 
     return (
