@@ -8,7 +8,7 @@ import Documentation from './Documentation';
 import { buildSchema, globalQuery, schema, getIntrospection } from './graphql';
 import { Tab, Tabs } from './Tabs';
 import { Icon } from 'solid-heroicons';
-import { xMark } from 'solid-heroicons/outline';
+import { xMark, arrowPath } from 'solid-heroicons/outline';
 import { produce } from 'solid-js/store';
 import SettingsWindow from './SettingsWindow';
 import {
@@ -89,6 +89,10 @@ export const App: Component = () => {
         setGlobalStore('activeSheet', globalStore.sheets.length - 1);
     }
 
+    async function reloadDocs() {
+        buildSchema(await getIntrospection());
+    }
+
     return (
         <>
             <main class="flex h-screen">
@@ -114,13 +118,32 @@ export const App: Component = () => {
                                     {globalStore.sidebar === 'docs' &&
                                         'Documentations'}
                                 </h2>
-                                <button
-                                    onClick={() =>
-                                        setGlobalStore('openSidebar', false)
-                                    }
-                                >
-                                    <Icon class="h-6 w-6" path={xMark} />
-                                </button>
+                                <div class="item-center flex gap-4">
+                                    {globalStore.sidebar === 'docs' && (
+                                        <button
+                                            disabled={
+                                                globalStore.isIntrospectionLoading
+                                            }
+                                            onClick={reloadDocs}
+                                            classList={{
+                                                'animate-spin opacity-50':
+                                                    globalStore.isIntrospectionLoading,
+                                            }}
+                                        >
+                                            <Icon
+                                                class="h-6 w-6"
+                                                path={arrowPath}
+                                            />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() =>
+                                            setGlobalStore('openSidebar', false)
+                                        }
+                                    >
+                                        <Icon class="h-6 w-6" path={xMark} />
+                                    </button>
+                                </div>
                             </div>
                             <Show when={globalStore.sidebar === 'docs'}>
                                 <Show
@@ -135,11 +158,7 @@ export const App: Component = () => {
                                                 disabled={
                                                     globalStore.isIntrospectionLoading
                                                 }
-                                                onClick={async () => {
-                                                    buildSchema(
-                                                        await getIntrospection()
-                                                    );
-                                                }}
+                                                onClick={reloadDocs}
                                                 class="btn-primary btn-sm btn"
                                             >
                                                 Load schema
