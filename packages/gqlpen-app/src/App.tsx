@@ -29,6 +29,7 @@ export const App: Component = () => {
     }
 
     onMount(() => {
+        document.getElementById('splash')?.remove();
         (async () => {
             try {
                 const introspection =

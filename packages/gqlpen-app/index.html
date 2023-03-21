@@ -15,6 +15,79 @@
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
 
+        <div id="splash">
+            <h1>gqlpen</h1>
+            <span class="loader"></span>
+            <style>
+                *,
+                ::before,
+                ::after {
+                    box-sizing: border-box;
+                }
+                body {
+                    margin: 0; /* 1 */
+                    font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial,
+                        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'; /* 2 */
+                    background-color: black;
+                    color: white;
+                    font-family: sans-serif;
+                }
+                #splash {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                }
+                #splash h1 {
+                    font-weight: 400;
+                    margin: 0;
+                    font-size: 2.25rem;
+                    padding-bottom: 1.5rem;
+                }
+                .loader {
+                    opacity: 0;
+                    width: 6rem;
+                    height: 4.8px;
+                    display: inline-block;
+                    position: relative;
+                    background: rgba(255, 255, 255, 0.15);
+                    overflow: hidden;
+                    animation: appear 1.5s steps(1, end) forwards;
+                }
+                .loader::after {
+                    content: '';
+                    width: 2rem;
+                    height: 4.8px;
+                    background: #fff;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    box-sizing: border-box;
+                    animation: animloader 1s linear infinite;
+                }
+                @keyframes appear {
+                    0% {
+                        opacity: 0;
+                    }
+                    100% {
+                        opacity: 1;
+                    }
+                }
+                @keyframes animloader {
+                    0% {
+                        left: 0;
+                        transform: translateX(-100%);
+                    }
+                    100% {
+                        left: 100%;
+                        transform: translateX(0%);
+                    }
+                }
+            </style>
+        </div>
+
         <script src="/src/index.tsx" type="module"></script>
     </body>
 </html>
