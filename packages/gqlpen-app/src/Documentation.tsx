@@ -41,6 +41,7 @@ const Context = createContext<{
 const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
     const [history, setHistory] = createStore<(GQLType | GQLField)[]>([]);
 
+    // TODO maybe we dont need schema and just use introspection?
     return (
         <Context.Provider
             value={{
@@ -93,31 +94,31 @@ const TypeResolverPage: Component<{
 };
 
 const MainPage: Component = () => {
-    const { goTo } = useContext(Context);
-    const { schema } = useContext(Context);
+    const { schema, goTo } = useContext(Context);
+
+    const mutation = schema()?.getMutationType();
+    const query = schema()?.getQueryType();
 
     return (
         <div>
-            <button
-                onClick={() => goTo(schema()!.getQueryType()!)}
-                class={`link-primary link block ${
-                    !schema()?.getQueryType() && 'link-accent'
-                }`}
-                type="button"
-                disabled={!schema()?.getQueryType()}
-            >
-                Query
-            </button>
-            <button
-                onClick={() => goTo(schema()!.getMutationType()!)}
-                class={`link-primary link block ${
-                    !schema()?.getMutationType() && 'link-accent'
-                }`}
-                type="button"
-                disabled={!schema()?.getMutationType()}
-            >
-                Mutation
-            </button>
+            <Show when={query}>
+                <button
+                    onClick={() => goTo(query!)}
+                    class="link-primary link block"
+                    type="button"
+                >
+                    Query
+                </button>
+            </Show>
+            <Show when={mutation}>
+                <button
+                    onClick={() => goTo(mutation!)}
+                    class="link-primary link block"
+                    type="button"
+                >
+                    Mutation
+                </button>
+            </Show>
         </div>
     );
 };
