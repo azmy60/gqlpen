@@ -16,7 +16,7 @@ import {
     isListType,
     isNonNullType,
 } from 'graphql';
-import { Component, For, Match, Switch } from 'solid-js';
+import { Component, createEffect, For, Match, Switch } from 'solid-js';
 import { Icon } from 'solid-heroicons';
 import { arrowLeft } from 'solid-heroicons/solid';
 import { createContext, useContext } from 'solid-js';
@@ -41,7 +41,6 @@ const Context = createContext<{
 const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
     const [history, setHistory] = createStore<(GQLType | GQLField)[]>([]);
 
-    // TODO maybe we dont need schema and just use introspection?
     return (
         <Context.Provider
             value={{
@@ -51,15 +50,15 @@ const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
                 goBack: () => setHistory(produce((history) => history.pop())),
             }}
         >
-            <Show when={history.length > 0} fallback={<MainPage />}>
+            <Show when={history.length > 0} fallback={<SchemaDocumentation />}>
                 <Switch>
                     <Match when={isType(history.at(-1))}>
-                        <TypeResolverPage
+                        <TypeResolver
                             type={history[history.length - 1] as GQLType}
                         />
                     </Match>
                     <Match when={!isType(history.at(-1))}>
-                        <FieldPage
+                        <FieldDocumentation
                             field={history.at(-1) as GraphQLField<any, any>}
                         />
                     </Match>
@@ -69,42 +68,43 @@ const Documentation: Component<{ schema: GraphQLSchema }> = (props) => {
     );
 };
 
-const TypeResolverPage: Component<{
+const TypeResolver: Component<{
     type: GQLType;
     field?: boolean;
 }> = (props) => {
     return (
         <Switch>
             <Match when={isScalarType(props.type)}>
-                <ScalarTypePage type={props.type as GraphQLScalarType} />
+                <ScalarDocumentation type={props.type as GraphQLScalarType} />
             </Match>
             <Match when={isObjectType(props.type)}>
-                <ObjectTypePage type={props.type as GraphQLObjectType} />
+                <ObjectDocumentation type={props.type as GraphQLObjectType} />
             </Match>
             <Match when={isInputObjectType(props.type)}>
-                <InputObjectTypePage
+                <InputObjectDocumentation
                     type={props.type as GraphQLInputObjectType}
                 />
             </Match>
             <Match when={isListType(props.type) || isNonNullType(props.type)}>
-                <TypeResolverPage type={(props.type as GQLList).ofType} />
+                <TypeResolver type={(props.type as GQLList).ofType} />
             </Match>
         </Switch>
     );
 };
 
-const MainPage: Component = () => {
+const SchemaDocumentation: Component = () => {
     const { schema, goTo } = useContext(Context);
 
     const mutation = schema()?.getMutationType();
     const query = schema()?.getQueryType();
+    const subscription = schema()?.getSubscriptionType();
 
     return (
         <div>
             <Show when={query}>
                 <button
                     onClick={() => goTo(query!)}
-                    class="link-primary link block"
+                    class="text-primary-content block hover:underline"
                     type="button"
                 >
                     Query
@@ -113,7 +113,16 @@ const MainPage: Component = () => {
             <Show when={mutation}>
                 <button
                     onClick={() => goTo(mutation!)}
-                    class="link-primary link block"
+                    class="text-primary-content block hover:underline"
+                    type="button"
+                >
+                    Mutation
+                </button>
+            </Show>
+            <Show when={subscription}>
+                <button
+                    onClick={() => goTo(subscription!)}
+                    class="text-primary-content block hover:underline"
                     type="button"
                 >
                     Mutation
@@ -123,27 +132,35 @@ const MainPage: Component = () => {
     );
 };
 
-const ObjectTypePage: Component<{ type: GraphQLObjectType }> = (props) => {
+const ObjectDocumentation: Component<{ type: GraphQLObjectType }> = (props) => {
     const { goTo, goBack } = useContext(Context);
     const getFields = () => extractFields(props.type);
     return (
         <div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 pb-4">
                 <button onClick={goBack} type="button">
                     <Icon path={arrowLeft} class="h-4 w-4" />
                 </button>
-                <h1>{props.type.name}</h1>
+                <h1 class="font-semibold">{props.type.name}</h1>
             </div>
-            <p>{props.type.description}</p>
+            <Show when={props.type.description}>
+                <Description description={props.type.description!} />
+            </Show>
             <ul class="flex flex-col gap-2">
                 <For each={getFields()}>
                     {(field) => (
                         <li>
                             <p>
-                                <button onClick={() => goTo(field)}>
+                                <button
+                                    class="text-primary-content hover:underline"
+                                    onClick={() => goTo(field)}
+                                >
                                     {buildFieldNameArgs(field)}
                                 </button>{' '}
-                                <button onClick={() => goTo(field.type)}>
+                                <button
+                                    class="text-secondary-content hover:underline"
+                                    onClick={() => goTo(field.type)}
+                                >
                                     {field.type.toString()}
                                 </button>
                             </p>
@@ -156,20 +173,22 @@ const ObjectTypePage: Component<{ type: GraphQLObjectType }> = (props) => {
     );
 };
 
-const InputObjectTypePage: Component<{ type: GraphQLInputObjectType }> = (
+const InputObjectDocumentation: Component<{ type: GraphQLInputObjectType }> = (
     props
 ) => {
     const { goTo, goBack } = useContext(Context);
     const getFields = () => extractFields(props.type);
     return (
         <div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 pb-4">
                 <button onClick={goBack} type="button">
                     <Icon path={arrowLeft} class="h-4 w-4" />
                 </button>
-                <h1>{props.type.name}</h1>
+                <h1 class="font-semibold">{props.type.name}</h1>
             </div>
-            <p>{props.type.description}</p>
+            <Show when={props.type.description}>
+                <Description description={props.type.description!} />
+            </Show>
             <ul class="flex flex-col gap-2">
                 <For each={getFields()}>
                     {(field) => (
@@ -189,33 +208,40 @@ const InputObjectTypePage: Component<{ type: GraphQLInputObjectType }> = (
     );
 };
 
-const ScalarTypePage: Component<{ type: GraphQLScalarType }> = (props) => {
+const ScalarDocumentation: Component<{ type: GraphQLScalarType }> = (props) => {
     const { goBack } = useContext(Context);
     return (
         <div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 pb-4">
                 <button onClick={goBack} type="button">
                     <Icon path={arrowLeft} class="h-4 w-4" />
                 </button>
-                <h1>{props.type.name}</h1>
+                <h1 class="font-semibold">{props.type.name}</h1>
             </div>
-            <p>{props.type.description}</p>
+            <Show when={props.type.description}>
+                <Description description={props.type.description!} />
+            </Show>
         </div>
     );
 };
 
-const FieldPage: Component<{ field: GQLField }> = (props) => {
+const FieldDocumentation: Component<{ field: GQLField }> = (props) => {
     const { goTo, goBack } = useContext(Context);
     return (
         <div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 pb-4">
                 <button onClick={goBack} type="button">
                     <Icon path={arrowLeft} class="h-4 w-4" />
                 </button>
-                <h1>{props.field.name}</h1>
+                <h1 class="font-semibold">{props.field.name}</h1>
             </div>
-            <p>{props.field.description}</p>
-            <button onClick={() => goTo(props.field.type)}>
+            <Show when={props.field.description}>
+                <Description description={props.field.description!} />
+            </Show>
+            <button
+                onClick={() => goTo(props.field.type)}
+                class="text-primary-content pb-4 hover:underline"
+            >
                 {props.field.type.toString()}
             </button>
             <ul class="flex flex-col gap-2">
@@ -223,8 +249,11 @@ const FieldPage: Component<{ field: GQLField }> = (props) => {
                     {(arg) => (
                         <li>
                             <p>
-                                <button>{arg.name}</button>{' '}
-                                <button onClick={() => goTo(arg.type)}>
+                                <span>{arg.name}</span>{' '}
+                                <button
+                                    onClick={() => goTo(arg.type)}
+                                    class="text-secondary-content hover:underline"
+                                >
                                     {arg.type.toString()}
                                 </button>
                             </p>
@@ -236,6 +265,14 @@ const FieldPage: Component<{ field: GQLField }> = (props) => {
         </div>
     );
 };
+
+const Description: Component<{ description: string }> = (props) => (
+    <>
+        {/* TODO parse description with markdown parser */}
+        <p>{props.description}</p>
+        <div class="divider" />
+    </>
+);
 
 function buildFieldNameArgs(field: GQLField): string {
     return (
