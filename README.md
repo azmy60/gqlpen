@@ -1,19 +1,19 @@
 # gqlpen
 
-This is a monorepo of gqlpen, a minimal (and might be just another) graphql IDE that works in the browser as an extension, or as a static html page.
+gqlpen is a GraphQL IDE designed to be minimal and simple, with the option to use it as a browser extension or a static HTML page.
 
-The main focus of this project is to build (another) graphql IDE that is minimal, in other word, simple, and... uhmm... simple! 
+The main focus of this project is to build (another) graphql IDE that is minimal, in other word, simple, and... uhmm... here is the photo... 
 
 ![image](https://user-images.githubusercontent.com/38707148/227720271-56ce0d68-9547-4e5c-aeb9-70d58c26e692.png)
 
-I started this project because I had used a couple of graphql IDE like graphiql, altair, postman, and none of them really satisfy me.
+While there are several popular options such as GraphiQL, Altair, and Postman, I found that they did not fully meet my needs.
 
-Graphiql and altair are great but they have an issue with CORS. With altair, you have to download the desktop version to fix it but the search bar is kind of difficult to use, especially with huge schema. It's way easier to use the native chrome search bar instead (ctrl + f). Postman doesn't have issue with CORS, but it's an overkill for my workflow.
+GraphiQL and Altair can have CORS issues, which can be frustrating to work around, and Postman was too complex for my workflow.
 
-If you would like to suggest any ideas, or contribute, feel free to do so!
+If you have any suggestions or would like to contribute, feel free to do so!
 
 ## Development
 
 You can start a dev server by running `yarn app:dev`. The main app is located at [packages/gqlpen-app](https://github.com/azmy60/gqlpen/tree/main/packages/gqlpen-app). The web extension (for chrome) is at [packages/gqlpen-web-ext](https://github.com/azmy60/gqlpen/tree/main/packages/gqlpen-web-ext).
 
-In the future, I want to make a proxy server to address the CORS issue. This can be easily done with express server or python, but I'm thinking of using rust, but I'm still not good at it ;-; I'm halfway learning rust, so hopefully I can start building it pretty soon.
+In the future, I want to make a proxy server to address the CORS issue. This can be easily done with express server or python, but I'm thinking of using rust, but I'm still not good at it ;-; I'm halfway learning rust, so I hope to begin building it soon.
