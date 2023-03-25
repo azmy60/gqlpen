@@ -8,7 +8,7 @@
         "build:app": "yarn workspace @gqlpen/app build && mkdir -p ./dist/app/ && cp -r ../gqlpen-app/dist/* ./dist/app/",
         "dev": "yarn build:app && yarn build",
         "dev:watch": "yarn build:app && chokidar 'src/**/*' -c 'yarn build'",
-        "prod": "tsc && vite build && cp src/manifest.json dist/",
+        "prod": "vite build && cp src/manifest.json dist/",
         "preview": "vite preview"
     },
     "devDependencies": {

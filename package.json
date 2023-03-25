@@ -2,5 +2,7 @@
     "private": true,
     "name": "gqlpen",
     "workspaces": ["packages/*"],
-    "scripts": {}
+    "scripts": {
+        "app:dev": "yarn workspace @gqlpen/app dev"
+    }
 }
