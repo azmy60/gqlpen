@@ -6,7 +6,7 @@ The main focus of this project is to build (another) graphql IDE that is minimal
 
 ![image](https://user-images.githubusercontent.com/38707148/227720271-56ce0d68-9547-4e5c-aeb9-70d58c26e692.png)
 
-The started this project because I had used a couple of graphql IDE like graphiql, altair, postman, and none of them really satisfy me.
+I started this project because I had used a couple of graphql IDE like graphiql, altair, postman, and none of them really satisfy me.
 
 Graphiql and altair are great but they have an issue with CORS. With altair, you have to download the desktop version to fix it but the search bar is kind of difficult to use, especially with huge schema. It's way easier to use the native chrome search bar instead (ctrl + f). Postman doesn't have issue with CORS, but it's an overkill for my workflow.
 
