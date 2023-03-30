@@ -1,8 +1,7 @@
 import { Icon } from 'solid-heroicons';
-import { plus } from 'solid-heroicons/solid';
-import { For, onMount } from 'solid-js';
+import { plus, xMark } from 'solid-heroicons/solid';
+import { type Component, For, onMount } from 'solid-js';
 import { produce } from 'solid-js/store';
-import { KeyValueInputs } from './components';
 import { globalStore, setGlobalStore } from './state';
 
 const SettingsWindow = () => {
@@ -45,6 +44,18 @@ const SettingsWindow = () => {
         );
     };
 
+    const handleRemoveHeader = (
+        type: 'introspectionHeaders' | 'queryHeaders',
+        index: number
+    ) => {
+        setGlobalStore(
+            type,
+            produce((headers) => {
+                headers.splice(index, 1);
+            })
+        );
+    };
+
     let endpointInput: HTMLInputElement;
 
     onMount(() => {
@@ -69,21 +80,34 @@ const SettingsWindow = () => {
                 <h3 class="font-semibold text-white">Introspection Headers</h3>
                 <For each={globalStore.introspectionHeaders}>
                     {(header, i) => (
-                        <div class="flex gap-[1.375rem]">
-                            <KeyValueInputs
-                                keyValue={header.key}
-                                valueValue={header.value}
-                                handleKeyInput={(event) =>
-                                    handleIntrospectionInput(event, i(), 'key')
+                        <div class="flex items-center gap-2">
+                            <div class="flex gap-[1.375rem]">
+                                <KeyValueInputs
+                                    keyValue={header.key}
+                                    valueValue={header.value}
+                                    handleKeyInput={(event) =>
+                                        handleIntrospectionInput(
+                                            event,
+                                            i(),
+                                            'key'
+                                        )
+                                    }
+                                    handleValueInput={(event) =>
+                                        handleIntrospectionInput(
+                                            event,
+                                            i(),
+                                            'value'
+                                        )
+                                    }
+                                />
+                            </div>
+                            <button
+                                onClick={() =>
+                                    handleRemoveHeader('introspectionHeaders', i())
                                 }
-                                handleValueInput={(event) =>
-                                    handleIntrospectionInput(
-                                        event,
-                                        i(),
-                                        'value'
-                                    )
-                                }
-                            />
+                            >
+                                <Icon class="h-5 w-5" path={xMark} />
+                            </button>
                         </div>
                     )}
                 </For>
@@ -99,17 +123,26 @@ const SettingsWindow = () => {
                 <h3 class="font-semibold text-white">Query Headers</h3>
                 <For each={globalStore.queryHeaders}>
                     {(header, i) => (
-                        <div class="flex gap-[1.375rem]">
-                            <KeyValueInputs
-                                keyValue={header.key}
-                                valueValue={header.value}
-                                handleKeyInput={(event) =>
-                                    handleQueryInput(event, i(), 'key')
+                        <div class="flex items-center gap-2">
+                            <div class="flex gap-4">
+                                <KeyValueInputs
+                                    keyValue={header.key}
+                                    valueValue={header.value}
+                                    handleKeyInput={(event) =>
+                                        handleQueryInput(event, i(), 'key')
+                                    }
+                                    handleValueInput={(event) =>
+                                        handleQueryInput(event, i(), 'value')
+                                    }
+                                />
+                            </div>
+                            <button
+                                onClick={() =>
+                                    handleRemoveHeader('queryHeaders', i())
                                 }
-                                handleValueInput={(event) =>
-                                    handleQueryInput(event, i(), 'value')
-                                }
-                            />
+                            >
+                                <Icon class="h-5 w-5" path={xMark} />
+                            </button>
                         </div>
                     )}
                 </For>
@@ -122,6 +155,32 @@ const SettingsWindow = () => {
                 </button>
             </div>
         </div>
+    );
+};
+
+const KeyValueInputs: Component<{
+    keyValue: string;
+    valueValue: string;
+    handleKeyInput: (event: InputEvent) => void;
+    handleValueInput: (event: InputEvent) => void;
+}> = (props) => {
+    return (
+        <>
+            <input
+                type="text"
+                class="input-bordered input w-full"
+                placeholder="Key"
+                value={props.keyValue}
+                onInput={props.handleKeyInput}
+            />
+            <input
+                type="text"
+                class="input-bordered input w-full"
+                placeholder="Value"
+                value={props.valueValue}
+                onInput={props.handleValueInput}
+            />
+        </>
     );
 };
 
