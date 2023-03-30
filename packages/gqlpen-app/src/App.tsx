@@ -5,7 +5,7 @@ import { getIsStoreDirty, globalStore, save, setGlobalStore } from './state';
 import { CodeEditor, Preview } from './CodeEditor';
 import TopBar from './TopBar';
 import Documentation from './Documentation';
-import { buildSchema, globalQuery, schema, getIntrospection } from './graphql';
+import { buildSchema, queryAndUpdateResult, schema, fetchAndUpdateIntrospection } from './graphql';
 import { Tab, Tabs } from './Tabs';
 import { Icon } from 'solid-heroicons';
 import { xMark, arrowPath } from 'solid-heroicons/outline';
@@ -49,7 +49,7 @@ export const App: Component = () => {
         (async () => {
             try {
                 const introspection =
-                    globalStore.introspection ?? (await getIntrospection());
+                    globalStore.introspection ?? (await fetchAndUpdateIntrospection());
                 buildSchema(introspection);
             } catch (e) {}
         })();
@@ -90,7 +90,7 @@ export const App: Component = () => {
     }
 
     async function reloadDocs() {
-        buildSchema(await getIntrospection());
+        buildSchema(await fetchAndUpdateIntrospection());
     }
 
     return (
@@ -99,7 +99,7 @@ export const App: Component = () => {
                 <div class="flex grow basis-0 flex-col overflow-hidden">
                     <TopBar />
                     <CodeEditor
-                        onCtrlEnter={globalQuery}
+                        onCtrlEnter={queryAndUpdateResult}
                         class="grow overflow-auto"
                     />
                 </div>
@@ -116,7 +116,7 @@ export const App: Component = () => {
                                     {globalStore.sidebar === 'settings' &&
                                         'Settings'}
                                     {globalStore.sidebar === 'docs' &&
-                                        'Documentations'}
+                                        'Documentation'}
                                 </h2>
                                 <div class="item-center flex gap-4">
                                     {globalStore.sidebar === 'docs' && (

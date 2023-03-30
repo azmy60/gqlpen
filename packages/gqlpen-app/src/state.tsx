@@ -7,6 +7,7 @@ interface PersistentGlobalStore {
     schema: GraphQLSchema | null;
     introspection: IntrospectionQuery | null;
     result: any;
+    headers: { key: string; value: string }[];
     introspectionHeaders: { key: string; value: string }[];
     queryHeaders: { key: string; value: string }[];
     openDocs: boolean;
@@ -33,6 +34,7 @@ function loadGlobalStore(): PersistentGlobalStore {
             schema: null,
             introspection: null,
             result: {},
+            headers: [],
             introspectionHeaders: [],
             queryHeaders: [],
             openDocs: false,

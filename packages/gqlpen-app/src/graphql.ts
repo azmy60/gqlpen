@@ -54,28 +54,29 @@ function transformHeadersArrayToObject(
     );
 }
 
-export async function getIntrospection(): Promise<IntrospectionQuery> {
+export async function fetchAndUpdateIntrospection(): Promise<IntrospectionQuery> {
     setGlobalStore('isIntrospectionLoading', true);
-    const introspection = await queryIntrospection(
-        globalStore.endpoint,
-        transformHeadersArrayToObject(globalStore.introspectionHeaders)
-    );
+    const introspection = (
+        await fetchQuery(globalStore.endpoint, getIntrospectionQuery(), {
+            ...transformHeadersArrayToObject(globalStore.headers),
+            ...transformHeadersArrayToObject(globalStore.introspectionHeaders),
+        })
+    ).data;
     setGlobalStore('introspection', introspection);
     setGlobalStore('isIntrospectionLoading', false);
     return introspection;
 }
 
-async function queryIntrospection(endpoint: string, headers?: Headers) {
-    return (await query(endpoint, getIntrospectionQuery(), headers)).data;
-}
-
-export async function globalQuery() {
+export async function queryAndUpdateResult() {
     setGlobalStore('isQueryLoading', true);
     try {
-        const result = await query(
+        const result = await fetchQuery(
             globalStore.endpoint,
             globalStore.sheets[globalStore.activeSheet].content,
-            transformHeadersArrayToObject(globalStore.queryHeaders)
+            {
+                ...transformHeadersArrayToObject(globalStore.headers),
+                ...transformHeadersArrayToObject(globalStore.queryHeaders),
+            }
         );
         setGlobalStore('result', () => {});
         setGlobalStore('result', result);
@@ -86,7 +87,7 @@ export async function globalQuery() {
     setGlobalStore('isQueryLoading', false);
 }
 
-export async function query(
+export async function fetchQuery(
     endpoint: string,
     query: string,
     headers?: Headers

@@ -2,7 +2,7 @@ import { Icon } from 'solid-heroicons';
 import { pencilSquare, play } from 'solid-heroicons/solid';
 import { type Component, createSignal, onMount, Show } from 'solid-js';
 import toast from 'solid-toast';
-import { buildSchema, globalQuery, getIntrospection } from './graphql';
+import { buildSchema, queryAndUpdateResult, fetchAndUpdateIntrospection } from './graphql';
 import { globalStore, setGlobalStore } from './state';
 
 const LoadingIcon: Component = () => {
@@ -37,7 +37,7 @@ const TopBar: Component = () => {
     async function loadIntrospection() {
         setLoading(true);
         try {
-            buildSchema(await getIntrospection());
+            buildSchema(await fetchAndUpdateIntrospection());
         } catch (e) {
             toast.error('Failed to load schema');
             console.error(e);
@@ -85,7 +85,7 @@ const TopBar: Component = () => {
                         </div>
                     }
                 >
-                    <button class="ml-auto" onClick={globalQuery}>
+                    <button class="ml-auto" onClick={queryAndUpdateResult}>
                         <Icon class="h-6 w-6" path={play} />
                     </button>
                 </Show>
