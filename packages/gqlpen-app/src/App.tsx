@@ -6,11 +6,10 @@ import { CodeEditor, Preview } from './CodeEditor';
 import TopBar from './TopBar';
 import Documentation from './Documentation';
 import {
-    buildSchema,
     queryAndUpdateResult,
     schema,
-    fetchAndUpdateIntrospection,
     updateDocs,
+    initializeDocs,
 } from './graphql';
 import { Tab, Tabs } from './Tabs';
 import { Icon } from 'solid-heroicons';
@@ -52,13 +51,8 @@ export const App: Component = () => {
 
     onMount(() => {
         document.getElementById('splash')?.remove();
-        (async () => {
-            try {
-                const introspection =
-                    globalStore.introspection ?? (await fetchAndUpdateIntrospection());
-                buildSchema(introspection);
-            } catch (e) {}
-        })();
+
+        initializeDocs();
 
         listenKeybindings();
 
@@ -160,7 +154,7 @@ export const App: Component = () => {
                                                 disabled={
                                                     globalStore.isIntrospectionLoading
                                                 }
-                                                onClick={reloadDocs}
+                                                onClick={updateDocs}
                                                 class="btn-primary btn-sm btn"
                                             >
                                                 Load schema

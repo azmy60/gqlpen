@@ -28,10 +28,6 @@ const [schema, setSchema] = createSignal<GraphQLSchema | null>(null);
 
 export { schema };
 
-export function buildSchema(introspection: IntrospectionQuery) {
-    setSchema(buildClientSchema(introspection));
-}
-
 type Headers = Record<string, string>;
 
 function buildHeaders(headers?: Headers) {
@@ -52,6 +48,11 @@ function transformHeadersArrayToObject(
         }),
         {}
     );
+}
+
+export async function initializeDocs() {
+    if (!globalStore.introspection) await updateDocs();
+    else setSchema(buildClientSchema(globalStore.introspection));
 }
 
 export async function updateDocs() {

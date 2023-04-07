@@ -1,30 +1,36 @@
-type EventHandler = (payload: any) => void;
+type EventHandler<T> = (payload: T) => void;
+type Payload<K> = Parameters<EventHandler<K>>[0];
 
-interface EventBus {
-    on(key: string, handler: EventHandler): void;
-    off(key: string, handler: EventHandler): void;
-    emit(key: string, ...payload: Parameters<EventHandler>): void;
-    once(key: string, handler: EventHandler): void;
+export type EventCollection = Record<string, any>;
+export type EmptyPayload = undefined;
+
+interface EventBus<I extends EventCollection> {
+    on<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
+    off<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
+    emit<K extends keyof I>(key: K, payload: Payload<I[K]>): void;
+    once<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
 }
 
-type Bus = Record<string, EventHandler[]>;
+type Bus<I extends EventCollection> = {
+    [K in keyof I]?: EventHandler<I[K]>[];
+};
 
-export function createEventBus(config?: {
+export function createEventBus<I extends EventCollection>(config?: {
     onError: (...params: any[]) => void;
-}): EventBus {
-    const bus: Bus = {};
+}): EventBus<I> {
+    const bus: Bus<I> = {};
 
-    const off: EventBus['off'] = (key, handler) => {
+    const off: EventBus<I>['off'] = (key, handler) => {
         const index = bus[key]?.indexOf(handler) ?? -1;
         bus[key]?.splice(index >>> 0, 1);
     };
 
-    const on: EventBus['on'] = (key, handler) => {
+    const on: EventBus<I>['on'] = (key, handler) => {
         if (!bus[key]) bus[key] = [];
         bus[key]?.push(handler);
     };
 
-    const emit: EventBus['emit'] = (key, ...payload) => {
+    const emit: EventBus<I>['emit'] = (key, payload) => {
         bus[key]?.forEach((handler) => {
             try {
                 handler(payload);
@@ -34,12 +40,12 @@ export function createEventBus(config?: {
         });
     };
 
-    const once: EventBus['once'] = (key, handler) => {
-        const handleOnce = (...payload: Parameters<typeof handler>) => {
+    const once: EventBus<I>['once'] = (key, handler) => {
+        const handleOnce = (payload: Payload<I[typeof key]>) => {
             handler(payload);
-            off(key, handleOnce as typeof handler);
+            off(key, handleOnce);
         };
-        on(key, handleOnce as typeof handler);
+        on(key, handleOnce);
     };
 
     return { on, off, emit, once };
