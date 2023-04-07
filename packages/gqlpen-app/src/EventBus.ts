@@ -1,8 +1,8 @@
 type EventHandler<T> = (payload: T) => void;
 type Payload<K> = Parameters<EventHandler<K>>[0];
 
-export type EventCollection = Record<string, any>;
-export type EmptyPayload = undefined;
+type EventCollection = Record<string, any>;
+export type NoPayload = undefined;
 
 interface EventBus<I extends EventCollection> {
     on<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
