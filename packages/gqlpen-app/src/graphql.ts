@@ -54,6 +54,10 @@ function transformHeadersArrayToObject(
     );
 }
 
+export async function updateDocs() {
+    setSchema(buildClientSchema(await fetchAndUpdateIntrospection()));
+}
+
 export async function fetchAndUpdateIntrospection(): Promise<IntrospectionQuery> {
     setGlobalStore('isIntrospectionLoading', true);
     const introspection = (

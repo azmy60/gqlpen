@@ -5,7 +5,13 @@ import { getIsStoreDirty, globalStore, save, setGlobalStore } from './state';
 import { CodeEditor, Preview } from './CodeEditor';
 import TopBar from './TopBar';
 import Documentation from './Documentation';
-import { buildSchema, queryAndUpdateResult, schema, fetchAndUpdateIntrospection } from './graphql';
+import {
+    buildSchema,
+    queryAndUpdateResult,
+    schema,
+    fetchAndUpdateIntrospection,
+    updateDocs,
+} from './graphql';
 import { Tab, Tabs } from './Tabs';
 import { Icon } from 'solid-heroicons';
 import { xMark, arrowPath } from 'solid-heroicons/outline';
@@ -89,10 +95,6 @@ export const App: Component = () => {
         setGlobalStore('activeSheet', globalStore.sheets.length - 1);
     }
 
-    async function reloadDocs() {
-        buildSchema(await fetchAndUpdateIntrospection());
-    }
-
     return (
         <>
             <main class="flex h-screen">
@@ -124,7 +126,7 @@ export const App: Component = () => {
                                             disabled={
                                                 globalStore.isIntrospectionLoading
                                             }
-                                            onClick={reloadDocs}
+                                            onClick={updateDocs}
                                             classList={{
                                                 'animate-spin opacity-50':
                                                     globalStore.isIntrospectionLoading,
