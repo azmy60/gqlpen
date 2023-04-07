@@ -1,13 +1,18 @@
 type EventHandler<T> = (payload?: T) => void;
-type Payload<K> = Parameters<EventHandler<K>>[0];
-
+type PayloadOf<I extends EventCollection, K extends keyof I> = Parameters<
+    EventHandler<I[K]>
+>[0];
 type EventCollection = Record<string, any>;
+
 export type NoPayload = undefined;
 
 interface EventBus<I extends EventCollection> {
     on<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
     off<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
-    emit<K extends keyof I>(key: K, ...payload: (Payload<I[K]> extends NoPayload ? [] : [Payload<I[K]>])): void;
+    emit<K extends keyof I>(
+        key: K,
+        ...payload: PayloadOf<I, K> extends NoPayload ? [] : [PayloadOf<I, K>]
+    ): void;
     once<K extends keyof I>(key: K, handler: EventHandler<I[K]>): void;
 }
 
@@ -41,7 +46,7 @@ export function createEventBus<I extends EventCollection>(config?: {
     };
 
     const once: EventBus<I>['once'] = (key, handler) => {
-        const handleOnce = (payload: Payload<I[typeof key]>) => {
+        const handleOnce = (payload: PayloadOf<I, typeof key>) => {
             handler(payload);
             off(key, handleOnce);
         };
