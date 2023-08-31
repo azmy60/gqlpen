@@ -1,6 +1,6 @@
 # gqlpen
 
-gqlpen is a GraphQL IDE designed to be minimal and simple, with the option to use it as a browser extension or a static HTML page.
+gqlpen is a GraphQL Editor designed to be minimal and simple, with the option to use it as a browser extension or a static HTML page.
 
 The main focus of this project is to build (another) graphql IDE that is minimal, in other word, simple, and... uhmm... here is the photo... 
 
