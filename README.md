@@ -16,4 +16,4 @@ If you have any suggestions or would like to contribute, feel free to do so!
 
 You can start a dev server by running `yarn app:dev`. The main app is located at [packages/gqlpen-app](https://github.com/azmy60/gqlpen/tree/main/packages/gqlpen-app). The web extension (for chrome) is at [packages/gqlpen-web-ext](https://github.com/azmy60/gqlpen/tree/main/packages/gqlpen-web-ext).
 
-In the future, I want to make a proxy server to address the CORS issue. This can be easily done with express server or python, but I'm thinking of using rust, but I'm still not good at it ;-; I'm halfway learning rust, so I hope to begin building it soon.
+This project does not resolve the CORS issue yet, so in the future, I want to make a proxy server to address it.
